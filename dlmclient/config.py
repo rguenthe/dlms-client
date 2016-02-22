@@ -25,7 +25,6 @@ class Config(object):
 			'maintenance_wifi':''
 		}
 		self.readConfig()
-		self.writeConfig()
 
 	def readConfig(self):
 		if os.path.isfile(self.xmlfilepath):
@@ -51,4 +50,4 @@ class Config(object):
 		try:
 			xmltree.write(destpath, xml_declaration=True, encoding='utf-8', pretty_print=True)
 		except IOError:
-			logger.error('Could not write config file to "%s"' %(destpath))
+			logger.error('Could not write config file "%s"' %(destpath))
