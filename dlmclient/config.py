@@ -1,15 +1,15 @@
-#!/usr/bin/python
-
 from __future__ import print_function
 
 import os.path
 import logging
 import lxml.etree as ET
+import logging
+
+logger = logging.getLogger('dlmclient')
 
 class Config(object):
 	
-	def __init__(self, logger, conffilepath='/etc/dlmclient.xml'):
-		self.logger = logger
+	def __init__(self, conffilepath='/etc/dlmclient.xml'):
 		self.xmlfilepath = os.path.abspath(conffilepath)
 		self.initialized = False
 		self.fields = {
@@ -36,9 +36,9 @@ class Config(object):
 				self.fields[key] = xmlroot.find(key).text
 
 			self.initialized = True
-			self.logger.info('config: Successfully read xml config file "%s"' %(self.xmlfilepath))
+			logger.info('Successfully read xml config file "%s"' %(self.xmlfilepath))
 		else:
-			self.logger.error('config: Could not find config file "%s"' %(self.xmlfilepath))
+			logger.error('Could not find config file "%s"' %(self.xmlfilepath))
 
 	def writeConfig(self, destpath='/etc/_dlmclient.xml', root='config'):
 		xmlroot = ET.Element(root)
@@ -51,4 +51,4 @@ class Config(object):
 		try:
 			xmltree.write(destpath, xml_declaration=True, encoding='utf-8', pretty_print=True)
 		except IOError:
-			self.logger.error('config: Could not write config file to "%s"' %(destpath))
+			logger.error('Could not write config file to "%s"' %(destpath))

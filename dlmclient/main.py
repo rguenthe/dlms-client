@@ -1,11 +1,13 @@
-#/usr/bin/python
-
 from __future__ import print_function
 
 import sys
 import argparse
+import logging
 
+import log
 from dlmclient import Dlmclient
+
+logger = log.setup_logger('dlmclient', '.dlmclient.log')
 
 def main():
 	parser = argparse.ArgumentParser(description='DLM-Client: Datalogger Management Client. Communicates with the DLM webservice and controls data logging application')
