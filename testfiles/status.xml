@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<status>
+	<serial>123456</serial>
+	<timestamp>2015/10/20 12:13:15</timestamp>
+	<uptime>12:23</uptime>
+	<free_disk_space_sdcard>10G</free_disk_space_sdcard>
+	<free_disk_space_stick>12G</free_disk_space_stick>
+	<gsm_reception>-90db</gsm_reception>
+	<log>message</log>
+</status>

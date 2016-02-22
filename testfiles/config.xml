@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+    <serial>123456</serial>
+    <timestamp>2016/21/11 11:12:13</timestamp>
+    <active>true</active>
+    <worker_exec_path>/usr/bin/gps-logger</worker_exec_path>
+    <worker_exec_option>-b 12 -v</worker_exec_option>
+    <status_upload_interval>2400</status_upload_interval>
+    <status_upload_url>http://urbandata.gnet.haw-hamburg.de/status</status_upload_url>
+    <data_upload_interval>36000</data_upload_interval>
+    <data_upload_url>http://urbandata.gnet.haw-hamburg.de/data</data_upload_url>
+    <maintenance_stay_online>false</maintenance_stay_online>
+    <maintenance_wifi>false</maintenance_wifi>
+</config>

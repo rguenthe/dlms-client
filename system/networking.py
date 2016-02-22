@@ -18,7 +18,7 @@ def getIP(iface):
 	return (ip,netmask)
 
 def openvpnCtrl(action):
-	if action is not in ['start', 'stop', 'restart']:
+	if action not in ['start', 'stop', 'restart']:
 		logger.error('Unknown action %s' %(action))
 		return 1
 
