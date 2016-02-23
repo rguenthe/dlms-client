@@ -13,7 +13,7 @@ from dlmclient.maintenance import Maintenance
 class Dlmclient(object):
 
 	def __init__(self, logfile='.dlmclient.log'):
-		self.config = Config('testfiles/config.xml')
+		self.config = Config('testfiles/dlmclient.conf')
 		self.status = Status()
 		self.worker = Worker()
 		self.webinterface = Webinterface()

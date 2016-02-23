@@ -4,50 +4,33 @@ import os.path
 import logging
 import lxml.etree as ET
 import logging
+import configparser
+import dlmclient.system.xml as xml
 
 logger = logging.getLogger('dlmclient')
 
 class Config(object):
 	
-	def __init__(self, conffilepath='/etc/dlmclient.xml'):
-		self.xmlfilepath = os.path.abspath(conffilepath)
-		self.initialized = False
-		self.fields = {
-			'serial':'',
-			'active':'',
-			'worker_exec_path':'',
-			'worker_exec_option':'',
-			'status_upload_interval':'',
-			'status_upload_url':'',
-			'data_upload_interval':'',
-			'data_upload_url':'',
-			'maintenance_stay_online':'',
-			'maintenance_wifi':''
-		}
-		self.readConfig()
+	def __init__(self, configfile='/etc/dlmclient.conf'):
+		self.configfile = configfile
+		self.config = configparser.ConfigParser()
+		self.config.read(self.configfile)
 
-	def readConfig(self):
-		if os.path.isfile(self.xmlfilepath):
-			xmltree = ET.parse(self.xmlfilepath)
-			xmlroot = xmltree.getroot()
+	def get(self, section, key):
+		self.config.get(section, key)
 
-			for key in self.fields.keys():
-				self.fields[key] = xmlroot.find(key).text
+	def set(self, section, key, value):
+		self.config[section][key] = value
 
-			self.initialized = True
-			logger.info('Successfully read xml config file "%s"' %(self.xmlfilepath))
-		else:
-			logger.error('Could not find config file "%s"' %(self.xmlfilepath))
+	def updateFromXml(self, xmlfile):
+		xml_conf = xml.readXmlFile(xmlfile)
+		if 'config' not in self.config.sections():
+			self.config['config'] = {}
+			
+		for key in xml_conf.keys():
+			self.set('config', key, xml_conf[key])
 
-	def writeConfig(self, destpath='/etc/_dlmclient.xml', root='config'):
-		xmlroot = ET.Element(root)
-		xmltree = ET.ElementTree(xmlroot)
+		with open(self.configfile, 'w') as configfile:
+			self.config.write(configfile)
+		logger.info('updated configuration from "%s"' %(xmlfile))
 
-		for key in sorted(self.fields.keys()):
-			item = ET.SubElement(xmlroot, key)
-			item.text = self.fields[key]
-
-		try:
-			xmltree.write(destpath, xml_declaration=True, encoding='utf-8', pretty_print=True)
-		except IOError:
-			logger.error('Could not write config file "%s"' %(destpath))

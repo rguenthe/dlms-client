@@ -1,0 +1,42 @@
+# /etc/network/interfaces -- configuration file for ifup(8), ifdown(8)
+
+# The loopback interface
+auto lo
+iface lo inet loopback
+
+# Wireless interfaces
+allow-hotplug wlan0
+auto wlan0
+iface wlan0 inet static
+    hostapd /etc/hostapd/hostapd.conf
+	address 192.168.2.1
+	netmask 255.255.255.0
+
+allow-hotplug wwan0
+iface wwan0 inet dhcp
+    pre-up /usr/bin/eject /dev/sr0; sleep 2
+    pre-up /usr/bin/qmicli -d /dev/cdc-wdm0 --dms-uim-verify-pin="PIN,4412"; sleep 2
+    pre-up /usr/bin/qmi-network /dev/cdc-wdm0 start
+    pre-down /usr/bin/qmi-network /dev/cdc-wdm0 stop
+    wwan_apn "internet.eplus.de"
+    wwan_debug 1
+
+# Wired or wireless interfaces
+auto eth0
+iface eth0 inet static
+	address 192.168.3.1
+	netmask 255.255.255.0
+	network 192.168.3.0
+
+iface eth1 inet dhcp
+
+# Ethernet/RNDIS gadget (g_ether)
+# ... or on host side, usbnet and random hwaddr
+iface usb0 inet static
+	address 192.168.7.2
+	netmask 255.255.255.0
+	network 192.168.7.0
+	gateway 192.168.7.1
+
+# Bluetooth networking
+iface bnep0 inet dhcp
