@@ -21,18 +21,6 @@ def getIP(iface):
 		logger.info('%s: IP address: %s, netmask: %s' %(iface, ip, netmask))
 	return (ip,netmask)
 
-def openvpnCtrl(action):
-	if action not in ['start', 'stop', 'restart']:
-		logger.error('Unknown action %s' %(action))
-		return 1
-
-	(ret, out) = subprocess.getstatusoutput('/etc/init.d/openvpn %s' %(action))
-	if ret is not 0:
-		logger.error('%s openvpn failed: ' %(action, out))
-	else:
-		logger.info('%s openvpn' %(action))
-	return ret
-
 class Interface(object):
 
 	def __init__(self, iface):
