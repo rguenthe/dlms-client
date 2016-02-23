@@ -4,11 +4,11 @@ import os
 import sys
 import logging
 
-from dlm.status import Status
-from dlm.config import Config
-from dlm.worker import Worker
-from dlm.webinterface import Webinterface
-from dlm.maintenance import Maintenance
+from dlmclient.status import Status
+from dlmclient.config import Config
+from dlmclient.worker import Worker
+from dlmclient.webinterface import Webinterface
+from dlmclient.maintenance import Maintenance
 
 class Dlmclient(object):
 

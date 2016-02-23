@@ -56,12 +56,18 @@ class Interface(object):
 
 class GsmModem(Interface):
 
-	def __init__(self, iface):
+	def __init__(self, iface, pin):
 		self.iface = iface
 		self.ip = '0.0.0.0'
 		self.netmask = '0.0.0.0'
 		self.wdm_device = None
-		self.pin = None
+		self.pin = pin
+
+	def up_configured(self):
+		self.setModemMode()
+		self.verifyPin(self.pin)
+		self.qmiNetworkCtrl('start')
+		self.up()
 
 	def setModemMode(self):
 		wdm_device = '/dev/cdc-wdm0'
