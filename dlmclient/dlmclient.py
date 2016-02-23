@@ -12,7 +12,7 @@ from dlmclient.maintenance import Maintenance
 
 class Dlmclient(object):
 
-	def __init__(self, logfile='.dlmclient.log'):
+	def __init__(self):
 		self.config = Config('testfiles/dlmclient.conf')
 		self.status = Status()
 		self.worker = Worker()

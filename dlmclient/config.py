@@ -28,7 +28,7 @@ class Config(object):
 			self.config['config'] = {}
 			
 		for key in xml_conf.keys():
-			self.set('config', key, xml_conf[key])
+			self.set('config', key, str(xml_conf[key]))
 
 		with open(self.configfile, 'w') as configfile:
 			self.config.write(configfile)

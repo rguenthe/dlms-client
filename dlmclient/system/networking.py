@@ -9,6 +9,8 @@ import fileinput
 logger = logging.getLogger('dlmclient')
 
 def getIP(iface):
+	ip = None
+	netmask = None
 	(ret, out) = subprocess.getstatusoutput('ifconfig %s' %(iface))
 	if ret is not 0:
 		logger.error('Could not get ip address of interface "%s": %s' %(iface, out))
