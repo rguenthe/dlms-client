@@ -4,6 +4,7 @@ import os.path
 import sys
 import subprocess
 import logging
+import fileinput
 
 logger = logging.getLogger('dlmclient')
 
@@ -56,20 +57,29 @@ class Interface(object):
 
 class GsmModem(Interface):
 
-	def __init__(self, iface, pin):
+	def __init__(self, iface, apn, pin):
 		self.iface = iface
+		self.apn = apn
+		self.pin = pin
 		self.ip = '0.0.0.0'
 		self.netmask = '0.0.0.0'
 		self.wdm_device = None
-		self.pin = pin
+		self.interfaces_file = '/etc/network/interfaces'
 
 	def up_configured(self):
-		self.setModemMode()
-		self.verifyPin(self.pin)
+		self.setupWDM()
+		self.setupAPN(self.apn)
+		self.verifyPIN(self.pin)
 		self.qmiNetworkCtrl('start')
 		self.up()
 
-	def setModemMode(self):
+	def setupAPN(self, apn):
+		for line in fileinput.FileInput(self.interfaces_file, inplace=1):
+			if 'wwan_apn' in line:
+				line = '    wwan_apn "%s"\n' %(apn)
+			print(line, end='')
+
+	def setupWDM(self):
 		wdm_device = '/dev/cdc-wdm0'
 		(ret, out) = subprocess.getstatusoutput('eject /dev/sr0')
 		if ret is not 0:
@@ -94,7 +104,7 @@ class GsmModem(Interface):
 			logger.info('%s qmi-network' %(action))
 		return ret	
 
-	def verifyPin(self, pin):
+	def verifyPIN(self, pin):
 		if self.wdm_device is None:
 			logger.error('No modem device present')
 			return 1
