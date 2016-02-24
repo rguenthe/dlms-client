@@ -47,27 +47,43 @@ class Interface(object):
 
 class GsmModem(Interface):
 
-	def __init__(self, iface, apn, pin):
-		self.iface = iface
-		self.apn = apn
-		self.pin = pin
-		self.ip = '0.0.0.0'
-		self.netmask = '0.0.0.0'
+	def __init__(self, iface):
+		super().__init__(iface)
+		self.pin = None
+		self.apn = None
 		self.wdm_device = None
 		self.interfaces_file = '/etc/network/interfaces'
 
-	def up_configured(self):
-		self.setupWDM()
-		self.setupAPN(self.apn)
-		self.verifyPIN(self.pin)
-		self.qmiNetworkCtrl('start')
-		self.up()
+	def up(self):
+		if self.pin or self.apn is None:
+			logger.error('Could not enable modem %s, PIN or APN is not configured' %(self.iface))
+			return 1
+		r1 = self.qmiNetworkCtrl('start')
+		r2 = super().up()
+		return (r1 or r2)
+
+	def down(self):
+		r1 = self.qmiNetworkCtrl('stop')
+		r2 = super().down()
+		return (r1 or r2)
+
+	def configure(self, apn, pin):
+		r1 = self.setupWDM()
+		r2 = self.setupAPN(apn)
+		r3 = self.verifyPIN(pin)
+		return (r1 or r2 or r3)
 
 	def setupAPN(self, apn):
-		for line in fileinput.FileInput(self.interfaces_file, inplace=1):
-			if 'wwan_apn' in line:
-				line = '    wwan_apn "%s"\n' %(apn)
-			print(line, end='')
+		try:
+			for line in fileinput.FileInput(self.interfaces_file, inplace=1):
+				if 'wwan_apn' in line:
+					line = '    wwan_apn "%s"\n' %(apn)
+				print(line, end='')
+			self.apn = apn	
+			logger.info('Setup APN %s for "%s"' %(apn, self.iface))
+		except FileNotFoundError as err:
+			logger.error('Could not setup APN %s for "%s": %s' %(apn, self.iface, err))
+			return 1
 
 	def setupWDM(self):
 		wdm_device = '/dev/cdc-wdm0'
@@ -75,12 +91,11 @@ class GsmModem(Interface):
 		if ret is not 0:
 			logger.error('Could not switch to modem mode: %s' %(out))
 			return ret
-		if os.path.exists(wdm_device):
-			logger.info('Switched to modem mode')
-			self.wdm_device = wdm_device
-		else:
+		if not os.path.exists(wdm_device):
 			logger.error('Could not switch to modem mode. Device %s does not exist' %(self.wdm_device))
 			return 1
+		logger.info('Switched to modem mode')
+		self.wdm_device = wdm_device
 		return ret
 
 	def qmiNetworkCtrl(self, action):
