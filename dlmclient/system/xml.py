@@ -19,7 +19,7 @@ def readXmlFile(filepath):
 
 	return content_dict
 
-def writeXmlFile(content_dict, filepath, root='file'):
+def writeXmlFile(filepath, content_dict, root):
 	xmlroot = ET.Element(root)
 	xmltree = ET.ElementTree(xmlroot)
 
@@ -28,5 +28,6 @@ def writeXmlFile(content_dict, filepath, root='file'):
 		item.text = content_dict[key]
 	try:
 		xmltree.write(filepath, xml_declaration=True, encoding='utf-8', pretty_print=True)
+		logger.info('Successfully wrote xml file "%s"' %(filepath))
 	except IOError:
 		logger.error('Could not write file "%s"' %(filepath))

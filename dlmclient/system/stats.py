@@ -8,6 +8,7 @@ import logging
 logger = logging.getLogger('dlmclient')
 
 def uptime():
+	cmd = 'uptime'
 	(ret, out) = subprocess.getstatusoutput('uptime')
 	if ret is not 0:
 		logger.error('Error read uptime: Could ne execute "%s"' %(cmd))
@@ -16,19 +17,20 @@ def uptime():
 		logger.info('read uptime')
 	return uptime
 
-def disk_usage(devices=['']):
-	disk_usage = {}
-	for dev in devices: 
-		(ret, out) = subprocess.getstatusoutput('df -l | grep -E "%s"' %(dev))
-		if ret is not  0:
-			logger.error('Error read disk usage: Could ne execute "%s"' %(cmd))
-		else:
-			disk_usage[dev] = out.split('\n')
-			logger.info('read disk_usage')
+def disk_usage(device):
+	disk_usage = None
+	cmd = 'df -l | grep -E "%s"' %(device)
+	(ret, out) = subprocess.getstatusoutput(cmd)
+	if ret is not  0:
+		logger.error('Error read disk usage: Could ne execute "%s"' %(cmd))
+	else:
+		disk_usage = out.split('\n')
+		logger.info('read disk_usage')
 	return disk_usage
 
 def mem_info():
-	(ret, out) = subprocess.getstatusoutput('free | grep -E "Mem|total"')
+	cmd = 'free | grep -E "Mem|total"'
+	(ret, out) = subprocess.getstatusoutput(cmd)
 	if ret is not  0:
 		logger.error('Error read uptime: Could ne execute "%s"' %(cmd))
 	else:
