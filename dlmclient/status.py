@@ -1,8 +1,50 @@
-#!/usr/bin/python
-
 from __future__ import print_function
+
+from pprint import pprint
+import time
+import logging
+import dlmclient.system as system
+
+logger = logging.getLogger('dlmclient')
 
 class Status(object):
 	
 	def __init__(self):
-		pass
+		self.status = {
+			'serial':'None',
+			'timestamp':'None',
+			'uptime':'None',
+			'free_disk_space_sdcard':'None',
+			'free_disk_space_stick':'None',
+			'gsm_reception':'None',
+			'log':'None',
+		}
+
+	def set(self, key, value):
+		try:
+			self.status[key] = value
+			logger.info('updated %s to %s' %(key, value))
+			ret = 0
+		except KeyError as err:
+			logger.error('could not update %s to %s: %s' %(key, value, err))
+			ret = 1
+		return ret
+
+	def get(self, key):
+		try:
+			ret = self.status[key] = value
+			logger.info('read %s' %(key))
+		except KeyError as err:
+			logger.error('could not read %s: %s' %(key, err))
+			ret = 1
+		return ret
+
+	def update(self):
+		self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
+		self.status['uptime'] = system.stats.uptime()
+		self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
+		self.status['free_disk_space_stick'] = system.stats.disk_usage('sdb1')
+		pprint(self.status)
+
+	def writeXml(self, xmlfile):
+		system.xml.writeXmlFile(xmlfile, self.status, 'status')
