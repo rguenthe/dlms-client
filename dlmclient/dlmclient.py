@@ -6,16 +6,14 @@ import logging
 
 from dlmclient.status import Status
 from dlmclient.config import Config
-from dlmclient.worker import Worker
+from dlmclient.system.worker import WorkerThread
 from dlmclient.webinterface import Webinterface
-from dlmclient.maintenance import Maintenance
 
 class Dlmclient(object):
 
 	def __init__(self):
 		self.config = Config('testfiles/dlmclient.conf')
 		self.status = Status()
-		self.worker = Worker()
+		self.worker = WorkerThread('sleep 10')
 		self.webinterface = Webinterface()
-		self.maintenance = Maintenance()
 		self.logger = logging.getLogger('dlmclient')
