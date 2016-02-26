@@ -12,7 +12,7 @@ from dlmclient.webinterface import Webinterface
 class Dlmclient(object):
 
 	def __init__(self):
-		self.config = Config('testfiles/dlmclient.conf')
+		self.config = Config('/etc/dlmclient.conf')
 		self.status = Status()
 		self.worker = WorkerThread('sleep 10')
 		self.webinterface = Webinterface()

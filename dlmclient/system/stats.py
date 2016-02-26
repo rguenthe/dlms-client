@@ -18,13 +18,13 @@ def uptime():
 	return uptime
 
 def disk_usage(device):
-	disk_usage = None
-	cmd = 'df -l | grep -E "%s"' %(device)
+	disk_usage = 'None'
+	cmd = 'df | grep -E "%s"' %(device)
 	(ret, out) = subprocess.getstatusoutput(cmd)
 	if ret is not  0:
 		logger.error('Error read disk usage: Could ne execute "%s"' %(cmd))
 	else:
-		disk_usage = out.split('\n')
+		disk_usage = re.sub(' +', ' ', out.strip())
 		logger.info('read disk_usage')
 	return disk_usage
 
