@@ -8,6 +8,7 @@ import logging
 logger = logging.getLogger('dlmclient')
 
 def readXmlFile(filepath):
+	"""Read the content of an XML file into a dictonary."""
 	content_dict = {}
 	if os.path.isfile(filepath):
 		xmltree = ET.parse(filepath)
@@ -20,6 +21,7 @@ def readXmlFile(filepath):
 	return content_dict
 
 def writeXmlFile(filepath, content_dict, root):
+	"""Write an XML file with content from the given dictonary."""
 	xmlroot = ET.Element(root)
 	xmltree = ET.ElementTree(xmlroot)
 

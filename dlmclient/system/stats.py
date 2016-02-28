@@ -8,6 +8,7 @@ import logging
 logger = logging.getLogger('dlmclient')
 
 def uptime():
+	"""Return the output of the 'uptime' command."""
 	cmd = 'uptime'
 	(ret, out) = subprocess.getstatusoutput('uptime')
 	if ret is not 0:
@@ -18,6 +19,7 @@ def uptime():
 	return uptime
 
 def disk_usage(device):
+	"""Return disk usage information for the given storrage device."""
 	disk_usage = 'None'
 	cmd = 'df | grep -E "%s"' %(device)
 	(ret, out) = subprocess.getstatusoutput(cmd)
@@ -29,6 +31,7 @@ def disk_usage(device):
 	return disk_usage
 
 def mem_info():
+	"""Return memory information."""
 	cmd = 'free | grep -E "Mem|total"'
 	(ret, out) = subprocess.getstatusoutput(cmd)
 	if ret is not  0:

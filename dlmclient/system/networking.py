@@ -9,6 +9,7 @@ import fileinput
 logger = logging.getLogger('dlmclient')
 
 def getIP(iface):
+	"""Return the IP and netmask of the given interface."""
 	ip = None
 	netmask = None
 	(ret, out) = subprocess.getstatusoutput('ifconfig %s' %(iface))
@@ -22,13 +23,16 @@ def getIP(iface):
 	return (ip,netmask)
 
 class Interface(object):
+	"""Network Interface"""
 
 	def __init__(self, iface):
+		"""Initialize interface with default values."""
 		self.iface = iface
 		self.ip = '0.0.0.0'
 		self.netmask = '0.0.0.0'
 
 	def up(self):
+		"""Enable the interface by calling 'ifup'."""
 		(ret, out) = subprocess.getstatusoutput('ifup %s' %(self.iface))
 		if ret is not 0:
 			logger.error('Could not enable interface "%s": %s' %(self.iface, out))
@@ -38,6 +42,7 @@ class Interface(object):
 		return ret
 
 	def down(self):
+		"""Disable the interface by calling 'ifdown'."""
 		(ret, out) = subprocess.getstatusoutput('ifdown %s' %(self.iface))
 		if ret is not 0:
 			logger.error('Could not disable interface "%s": %s' %(self.iface, out))
@@ -46,16 +51,18 @@ class Interface(object):
 		return ret
 
 class GsmModem(Interface):
+	"""WWAN network interface"""
 
 	def __init__(self, iface):
+		"""Initialize wwan network interface."""
 		super().__init__(iface)
 		self.pin = None
 		self.apn = None
 		self.wdm_device = None
 		self.configured = False
-		self.interfaces_file = '/etc/network/interfaces'
 
 	def up(self):
+		"""Enable wwan interface, if it is configured."""
 		if not self.configured:
 			logger.error('Could not enable modem %s, PIN or APN is not configured' %(self.iface))
 			return 1
@@ -64,11 +71,13 @@ class GsmModem(Interface):
 		return (r1 or r2)
 
 	def down(self):
+		"""Disable wwan interface."""
 		r1 = self.qmiNetworkCtrl('stop')
 		r2 = super().down()
 		return (r1 or r2)
 
 	def configure(self, apn, pin):
+		"""Configure the interface by setting APN and verifying PIN."""
 		r1 = self.setupWDM()
 		r2 = self.setupAPN(apn)
 		r3 = self.verifyPIN(pin)
@@ -78,8 +87,9 @@ class GsmModem(Interface):
 		return ret
 
 	def setupAPN(self, apn):
+		"""Setup the APN for internet connection by editing the '/etc/network/interfaces' file.""" 
 		try:
-			for line in fileinput.FileInput(self.interfaces_file, inplace=1):
+			for line in fileinput.FileInput('/etc/network/interfaces', inplace=1):
 				if 'wwan_apn' in line:
 					line = '    wwan_apn "%s"\n' %(apn)
 				print(line, end='')
@@ -91,6 +101,7 @@ class GsmModem(Interface):
 			return 1
 
 	def setupWDM(self):
+		"""Put the device in correct USB mode by ejecting the mass storage device."""
 		wdm_device = '/dev/cdc-wdm0'
 		(ret, out) = subprocess.getstatusoutput('eject /dev/sr0')
 		if ret is not 0:
@@ -104,6 +115,7 @@ class GsmModem(Interface):
 		return ret
 
 	def qmiNetworkCtrl(self, action):
+		"""Execute 'qmi-network' command with 'start' or 'stop' argument."""
 		if action not in ['start', 'stop']:
 			logger.error('Unknown action %s' %(action))
 			return 1
@@ -115,6 +127,7 @@ class GsmModem(Interface):
 		return ret	
 
 	def verifyPIN(self, pin):
+		"""Unlock the SIM card using the given PIN."""
 		if self.wdm_device is None:
 			logger.error('No wdm device present')
 			return 1
@@ -127,6 +140,7 @@ class GsmModem(Interface):
 		return ret
 
 	def getSignalStrength(self):
+		"""Return current signal strength of the wwan device."""
 		out = self._qmicli_cmd(device=self.wdm_device, options='--nas-get-signal-strength')
 		if out is not None:
 			for line in out.split('\n'):
@@ -137,6 +151,7 @@ class GsmModem(Interface):
 			return out
 
 	def _qmicli_cmd(self, device, options):
+		"""Execute 'qmicli' command with given options."""
 		if device is None:
 			logger.error('Could not find device %s' %(device))
 			return None
@@ -144,7 +159,7 @@ class GsmModem(Interface):
 		(ret, out) = subprocess.getstatusoutput(cmd)
 		if ret is not 0 or 'error' in out:
 			logger.error('qmicli command failed: %s: %s' %(cmd, out))
-			return None
+			return ret
 		else:
 			logger.info('qmicli command successful: %s' %(cmd))
 			return out

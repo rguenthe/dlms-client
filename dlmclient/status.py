@@ -8,8 +8,10 @@ import dlmclient.system as system
 logger = logging.getLogger('dlmclient')
 
 class Status(object):
+	"""DLM client status"""
 	
 	def __init__(self, dlmclient):
+		"""Initialize Status instance with default values."""
 		self.dlmclient = dlmclient
 		self.status = {
 			'serial':'None',
@@ -22,6 +24,7 @@ class Status(object):
 		}
 
 	def set(self, key, value):
+		"""Set a value in the status dictonary."""
 		try:
 			self.status[key] = value
 			logger.info('updated %s to %s' %(key, value))
@@ -32,6 +35,7 @@ class Status(object):
 		return ret
 
 	def get(self, key):
+		"""Get a value from the status dictonary."""
 		try:
 			ret = self.status[key] = value
 			logger.info('read %s' %(key))
@@ -41,6 +45,7 @@ class Status(object):
 		return ret
 
 	def update(self):
+		"""update status by reading information from the system."""
 		self.status['serial'] = self.dlmclient.config.get('config', 'serial')
 		self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
 		self.status['uptime'] = system.stats.uptime()
@@ -50,4 +55,5 @@ class Status(object):
 		print(self.status)
 
 	def writeXml(self, xmlfile):
+		"""export current status to a xml file."""
 		system.xml.writeXmlFile(xmlfile, self.status, 'status')
