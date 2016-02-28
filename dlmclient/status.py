@@ -9,7 +9,8 @@ logger = logging.getLogger('dlmclient')
 
 class Status(object):
 	
-	def __init__(self):
+	def __init__(self, dlmclient):
+		self.dlmclient = dlmclient
 		self.status = {
 			'serial':'None',
 			'timestamp':'None',
@@ -40,11 +41,13 @@ class Status(object):
 		return ret
 
 	def update(self):
+		self.status['serial'] = self.dlmclient.config.get('config', 'serial')
 		self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
 		self.status['uptime'] = system.stats.uptime()
 		self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
-		self.status['free_disk_space_stick'] = system.stats.disk_usage('sdb1')
-		pprint(self.status)
+		self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
+		self.status['gsm_reception'] = self.dlmclient.wwan.getSignalStrength()
+		print(self.status)
 
 	def writeXml(self, xmlfile):
 		system.xml.writeXmlFile(xmlfile, self.status, 'status')
