@@ -12,7 +12,7 @@ def uptime():
 	cmd = 'uptime'
 	(ret, out) = subprocess.getstatusoutput('uptime')
 	if ret is not 0:
-		logger.error('Error read uptime: Could ne execute "%s"' %(cmd))
+		logger.error('Error reading uptime: Could ne execute "%s"' %(cmd))
 	else:
 		uptime = re.sub(' +', ' ', out.strip())
 		logger.info('read uptime')
@@ -24,7 +24,7 @@ def disk_usage(device):
 	cmd = 'df | grep -E "%s"' %(device)
 	(ret, out) = subprocess.getstatusoutput(cmd)
 	if ret is not  0:
-		logger.error('Error read disk usage: Could ne execute "%s"' %(cmd))
+		logger.error('Error reading disk usage: Could ne execute "%s"' %(cmd))
 	else:
 		disk_usage = re.sub(' +', ' ', out.strip())
 		logger.info('read disk_usage')
@@ -35,7 +35,7 @@ def mem_info():
 	cmd = 'free | grep -E "Mem|total"'
 	(ret, out) = subprocess.getstatusoutput(cmd)
 	if ret is not  0:
-		logger.error('Error read uptime: Could ne execute "%s"' %(cmd))
+		logger.error('Error reading memory information: Could ne execute "%s"' %(cmd))
 	else:
 		out = out.split('\n')
 		keys = out[0].split()

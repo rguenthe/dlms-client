@@ -50,11 +50,11 @@ class Interface(object):
 			logger.info('Disabled interface %s' %(self.iface))
 		return ret
 
-class GsmModem(Interface):
+class WwanInterface(Interface):
 	"""WWAN network interface"""
 
 	def __init__(self, iface):
-		"""Initialize wwan network interface."""
+		"""Initialize WwanInterface instance."""
 		super().__init__(iface)
 		self.pin = None
 		self.apn = None
