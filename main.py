@@ -10,18 +10,20 @@ logger = dlmclient.log.setup_logger('dlmclient', '.dlmclient.log', logging.DEBUG
 logger = logging.getLogger('dlmclient')
 
 def main():
-	parser = argparse.ArgumentParser(description='DLM-Client: Datalogger Management Client. Communicates with the DLM webservice and controls data logging application')
-	args = parser.parse_args()
+    parser = argparse.ArgumentParser(description='DLM-Client: Datalogger Management Client. Communicates with the DLM webservice and controls data logging application')
+    args = parser.parse_args()
 
-	dlmc = dlmclient.Dlmclient()
-
-	return 0
+    dlmc = dlmclient.Dlmclient(configfile='testfiles/dlmclient.conf')
+    dlmc.status.update()
+    dlmc.status.writeXml('real_status.xml')
+    
+    return 0
 
 if __name__ == "__main__":
-	try:
-		ret = main()
-	except Exception:
-		ret = 1
-		import traceback
-		traceback.print_exc(5)
-	sys.exit(ret)
+    try:
+        ret = main()
+    except Exception:
+        ret = 1
+        import traceback
+        traceback.print_exc(5)
+    sys.exit(ret)
