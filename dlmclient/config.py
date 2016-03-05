@@ -25,10 +25,10 @@ class Config(object):
         """return value an option in the configuration file."""
         try:
             value = self.config.get(section, key)
-            logger.info('set "%s" in section [%s] to "%s"' %(key, section, value))
+            logger.info('from section [%s] read "%s"' %(section, key))
         except Exception as err:
             value = None
-            logger.error('could not get option "%s" from section [%S]' %(key, section))
+            logger.error('could not read option "%s" from section [%s]: %s' %(key, section, err))
         
         return value
 
@@ -36,7 +36,7 @@ class Config(object):
         """set value in the configuration file."""
         try:
             ret = self.config.set(section, key, value)
-            logger.info('set "%s" in section [%s] to "%s"' %(key, section, value))
+            logger.info('in section [%s] set "%s" to "%s"' %(section, key, value))
         except Exception as err:
             ret = 1
             logger.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
