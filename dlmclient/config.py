@@ -18,11 +18,18 @@ class Config(object):
         self.config = configparser.ConfigParser()
         self.config.read(self.configfile)
 
+    def update(self):
+        self.config.read(self.configfile)
+
     def get(self, section, key):
         """return value an option in the configuration file."""
-        value = self.config.get(section, key)
-        if value is None:
+        try:
+            value = self.config.get(section, key)
+            logger.info('set "%s" in section [%s] to "%s"' %(key, section, value))
+        except Exception as err:
+            value = None
             logger.error('could not get option "%s" from section [%S]' %(key, section))
+        
         return value
 
     def set(self, section, key, value):
@@ -33,6 +40,7 @@ class Config(object):
         except Exception as err:
             ret = 1
             logger.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
+        
         return ret
 
     def read_xml(self, xmlfile, section='config'):
@@ -46,5 +54,6 @@ class Config(object):
 
         with open(self.configfile, 'w') as configfile:
             self.config.write(configfile)
+        
         logger.info('updated configuration from "%s"' %(xmlfile))
 

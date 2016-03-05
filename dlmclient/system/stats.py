@@ -15,8 +15,10 @@ def uptime():
     except subprocess.CalledProcessError as err:
         logger.error('Error reading uptime: Could ne execute "%s": %s' %(cmd, err))
         return 'None'
+
     uptime = re.sub(' +', ' ', out.strip())
     logger.info('read uptime')
+
     return uptime
 
 def disk_usage(device):
@@ -28,8 +30,10 @@ def disk_usage(device):
     except subprocess.CalledProcessError as err:
         logger.error('Error reading disk usage: Could ne execute "%s": %s' %(cmd, err))
         return 'None'
+    
     disk_usage = re.sub(' +', ' ', out.strip())
     logger.info('read disk_usage')
+    
     return disk_usage
 
 def mem_info():
@@ -40,9 +44,11 @@ def mem_info():
     except subprocess.CalledProcessError as err:
         logger.error('Error reading memory information: Could ne execute "%s"' %(cmd))
         return 'None'
+    
     out = out.split('\n')
     keys = out[0].split()
     values = out[1].strip('Mem:').split()
     mem_info = dict(zip(keys, values))
     logger.info('read mem info')
+    
     return mem_info

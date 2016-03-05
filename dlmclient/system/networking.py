@@ -7,7 +7,7 @@ from fileinput import FileInput
 
 logger = logging.getLogger('dlmclient')
 
-def getIP(iface):
+def get_ip(iface):
     """Return the IP and netmask of the given interface."""
     ip = None
     netmask = None
@@ -16,10 +16,12 @@ def getIP(iface):
     except subprocess.CalledProcessError as err:
         logger.error('Could not get ip address of interface "%s": %s' %(iface, err))    
         return (ip, netmask)
+    
     config = out.split()
     ip = config[config.index('inet')+1]
     netmask = config[config.index('netmask')+1]
     logger.info('%s: IP address: %s, netmask: %s' %(iface, ip, netmask))
+
     return (ip,netmask)
 
 class Interface(object):
@@ -39,7 +41,8 @@ class Interface(object):
             logger.error('Could not enable interface "%s": %s' %(self.iface, err))
             return 1
         logger.info('Enabled interface %s' %(self.iface))
-        self.ip, self.netmask = getIP(self.iface)
+        self.ip, self.netmask = get_ip(self.iface)
+
         return 0
 
     def down(self):
@@ -50,6 +53,7 @@ class Interface(object):
             logger.error('Could not disable interface "%s": %s' %(self.iface, err))
             return 1
         logger.info('Disabled interface %s' %(self.iface))
+
         return 0
 
 class WwanInterface(Interface):
@@ -68,14 +72,17 @@ class WwanInterface(Interface):
         if not self.configured:
             logger.error('Could not enable modem %s, PIN or APN is not configured' %(self.iface))
             return 1
+        
         r1 = self.qmi_network_ctrl('start')
         r2 = super().up()
+
         return (r1 or r2)
 
     def down(self):
         """Disable wwan interface."""
         r1 = self.qmi_network_ctrl('stop')
         r2 = super().down()
+        
         return (r1 or r2)
 
     def configure(self, apn, pin):
@@ -84,8 +91,10 @@ class WwanInterface(Interface):
         r2 = self.setup_apn(apn)
         r3 = self.verify_pin(pin)
         ret = (r1 or r2 or r3)
+        
         if ret is 0:
             self.configured = True
+
         return ret
 
     def setup_apn(self, apn):
@@ -98,8 +107,10 @@ class WwanInterface(Interface):
         except FileNotFoundError as err:
             logger.error('Could not setup APN %s for "%s": %s' %(apn, self.iface, err))
             return 1
+        
         self.apn = apn  
         logger.info('Setup APN %s for "%s"' %(apn, self.iface))
+
         return 0
 
     def setup_wdm(self):
@@ -113,8 +124,10 @@ class WwanInterface(Interface):
         if not os.path.exists(wdm_device):
             logger.error('Could not switch to wdm device mode. Device %s does not exist' %(self.wdm_device))
             return 1
+        
         logger.info('Switched to wdm device mode')
         self.wdm_device = wdm_device
+
         return 0
 
     def qmi_network_ctrl(self, action):
@@ -127,7 +140,9 @@ class WwanInterface(Interface):
         except subprocess.CalledProcessError as err:
             logger.error('%s qmi-network failed: %s' %(action, err))
             return 1
+        
         logger.info('%s qmi-network' %(action))
+
         return 0
 
     def verify_pin(self, pin):
@@ -140,8 +155,10 @@ class WwanInterface(Interface):
         except subprocess.CalledProcessError as err:
             logger.error('%s: pin verification failed: %s' %(self.iface, err))
             return 1
+        
         logger.info('%s: pin verification successful' %(self.iface))
         self.pin = pin
+
         return 0
 
     def signal_strength(self):
@@ -152,8 +169,10 @@ class WwanInterface(Interface):
         except subprocess.CalledProcessError as err:
             logger.error('%s: getting signal strength failed: %s' %(self.iface, err))
             return signalStrength
+        
         if out is not None:
             for line in out.split('\n'):
                 if 'Network' in line:
                     signalStrength = line.strip()
+
         return signalStrength

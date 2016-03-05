@@ -20,6 +20,7 @@ class WorkerThread(threading.Thread):
     def run(self):
         """Start the Thread."""
         logger.info('Starting worker thread with command %s' %(self.cmd))
-        (ret, out) = subprocess.getstatusoutput(self.cmd)
+        (ret, out) = subprocess.check_output(self.cmd, shell=True)
+        
         if ret is not 0:
             logger.error('Error while executing worker thread %s: %s' %(self.cmd, out))

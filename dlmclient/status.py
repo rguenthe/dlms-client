@@ -32,6 +32,7 @@ class Status(object):
         except KeyError as err:
             logger.error('could not update %s to %s: %s' %(key, value, err))
             ret = 1
+        
         return ret
 
     def get(self, key):
@@ -42,6 +43,7 @@ class Status(object):
         except KeyError as err:
             logger.error('could not read %s: %s' %(key, err))
             ret = 1
+        
         return ret
 
     def update(self):

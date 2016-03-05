@@ -26,4 +26,5 @@ class SystemService(object):
             logger.error('%s %s failed: %s' %(action, self.service, out))
         else:
             logger.info('%s %s' %(action, self.service))
+        
         return ret
