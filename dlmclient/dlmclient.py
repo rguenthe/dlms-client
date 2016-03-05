@@ -1,5 +1,3 @@
-from __future__ import print_function
-
 import os
 import sys
 import logging
@@ -7,9 +5,7 @@ import logging
 import dlmclient.system as system
 from dlmclient.status import Status
 from dlmclient.config import Config
-from dlmclient.system.worker import WorkerThread
-from dlmclient.system.service import SystemService
-from dlmclient.system.networking import WwanInterface
+from dlmclient.system.threads import CmdThread
 from dlmclient.webinterface import Webinterface
 
 class Dlmclient(object):
@@ -27,7 +23,4 @@ class Dlmclient(object):
         self.config = Config(configfile)
         self.status = Status(self)
         self.webinterface = Webinterface(self)
-        self.wwan = WwanInterface(self.config.get('gsm', 'iface'))
-        self.wwan.configure(apn=self.config.get('gsm', 'apn'), pin=self.config.get('gsm', 'pin'))
-        self.vpn = SystemService(self.config.get('vpn', 'service'))
-        self.worker = WorkerThread(self.config.get('config', 'worker_exec_path'))
+        self.worker = CmdThread(self.config.get('config', 'worker_exec_path'))
