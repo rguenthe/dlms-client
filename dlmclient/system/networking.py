@@ -64,7 +64,7 @@ class WwanInterface(Interface):
         super().__init__(iface)
         self.pin = None
         self.apn = None
-        self.wdm_device = None
+        self.wdm_device = self.get_wdm_device()
         self.configured = False
 
     def up(self):
@@ -87,15 +87,30 @@ class WwanInterface(Interface):
 
     def configure(self, apn, pin):
         """Configure the interface by setting APN and verifying PIN."""
-        r1 = self.setup_wdm()
-        r2 = self.setup_apn(apn)
-        r3 = self.verify_pin(pin)
-        ret = (r1 or r2 or r3)
+        r1 = self.setup_apn(apn)
+        r2 = self.verify_pin(pin)
+        ret = (r1 or r2)
         
         if ret is 0:
             self.configured = True
 
         return ret
+
+    def get_wdm_device(self):
+        """Put the device in correct USB mode by ejecting the mass storage device."""
+        wdm_device = '/dev/cdc-wdm%s' %(self.iface.strip('wwan')) 
+        try:
+            subprocess.check_call('eject /dev/sr0', shell=True)
+        except subprocess.CalledProcessError as err:
+            logger.error('Could not switch to wdm device mode: %s' %(err))
+            return 'None'
+        if not os.path.exists(wdm_device):
+            logger.error('Could not switch to wdm device mode. Device %s does not exist' %(self.wdm_device))
+            return 'None'
+        
+        logger.info('Switched to wdm device mode')
+        
+        return wdm_device
 
     def setup_apn(self, apn):
         """Setup the APN for internet connection by editing the '/etc/network/interfaces' file."""
@@ -110,23 +125,6 @@ class WwanInterface(Interface):
         
         self.apn = apn  
         logger.info('Setup APN %s for "%s"' %(apn, self.iface))
-
-        return 0
-
-    def setup_wdm(self):
-        """Put the device in correct USB mode by ejecting the mass storage device."""
-        wdm_device = '/dev/cdc-wdm%s' %(self.iface.strip('wwan')) 
-        try:
-            subprocess.check_call('eject /dev/sr0', shell=True)
-        except subprocess.CalledProcessError as err:
-            logger.error('Could not switch to wdm device mode: %s' %(err))
-            return 1
-        if not os.path.exists(wdm_device):
-            logger.error('Could not switch to wdm device mode. Device %s does not exist' %(self.wdm_device))
-            return 1
-        
-        logger.info('Switched to wdm device mode')
-        self.wdm_device = wdm_device
 
         return 0
 
@@ -164,6 +162,10 @@ class WwanInterface(Interface):
     def signal_strength(self):
         """Return current signal strength of the wwan device."""
         signalStrength = 'None'
+        if self.wdm_device is None:
+            logger.error('No wdm device present')
+            return 1
+
         try:
             out = subprocess.check_output('/usr/bin/qmicli -d %s --nas-get-signal-strength' %(self.wdm_device), shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
