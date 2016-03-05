@@ -68,27 +68,27 @@ class WwanInterface(Interface):
         if not self.configured:
             logger.error('Could not enable modem %s, PIN or APN is not configured' %(self.iface))
             return 1
-        r1 = self.qmiNetworkCtrl('start')
+        r1 = self.qmi_network_ctrl('start')
         r2 = super().up()
         return (r1 or r2)
 
     def down(self):
         """Disable wwan interface."""
-        r1 = self.qmiNetworkCtrl('stop')
+        r1 = self.qmi_network_ctrl('stop')
         r2 = super().down()
         return (r1 or r2)
 
     def configure(self, apn, pin):
         """Configure the interface by setting APN and verifying PIN."""
-        r1 = self.setupWDM()
-        r2 = self.setupAPN(apn)
-        r3 = self.verifyPIN(pin)
+        r1 = self.setup_wdm()
+        r2 = self.setup_apn(apn)
+        r3 = self.verify_pin(pin)
         ret = (r1 or r2 or r3)
         if ret is 0:
             self.configured = True
         return ret
 
-    def setupAPN(self, apn):
+    def setup_apn(self, apn):
         """Setup the APN for internet connection by editing the '/etc/network/interfaces' file."""
         try:
             for line in FileInput('/etc/network/interfaces', inplace=1):
@@ -102,7 +102,7 @@ class WwanInterface(Interface):
         logger.info('Setup APN %s for "%s"' %(apn, self.iface))
         return 0
 
-    def setupWDM(self):
+    def setup_wdm(self):
         """Put the device in correct USB mode by ejecting the mass storage device."""
         wdm_device = '/dev/cdc-wdm%s' %(self.iface.strip('wwan')) 
         try:
@@ -117,7 +117,7 @@ class WwanInterface(Interface):
         self.wdm_device = wdm_device
         return 0
 
-    def qmiNetworkCtrl(self, action):
+    def qmi_network_ctrl(self, action):
         """Execute 'qmi-network' command with 'start' or 'stop' argument."""
         if action not in ['start', 'stop']:
             logger.error('Unknown action %s' %(action))
@@ -130,7 +130,7 @@ class WwanInterface(Interface):
         logger.info('%s qmi-network' %(action))
         return 0
 
-    def verifyPIN(self, pin):
+    def verify_pin(self, pin):
         """Unlock the SIM card using the given PIN."""
         if self.wdm_device is None:
             logger.error('No wdm device present')
@@ -144,7 +144,7 @@ class WwanInterface(Interface):
         self.pin = pin
         return 0
 
-    def getSignalStrength(self):
+    def signal_strength(self):
         """Return current signal strength of the wwan device."""
         signalStrength = 'None'
         try:

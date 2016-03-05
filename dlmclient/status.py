@@ -51,9 +51,9 @@ class Status(object):
         self.status['uptime'] = system.stats.uptime()
         self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
         self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
-        self.status['gsm_reception'] = self.dlmclient.wwan.getSignalStrength()
+        self.status['gsm_reception'] = self.dlmclient.wwan.signal_strength()
         print(self.status)
 
-    def writeXml(self, xmlfile):
+    def write_xml(self, xmlfile):
         """export current status to a xml file."""
-        system.xml.writeXmlFile(xmlfile, self.status, 'status')
+        system.xml.write_file(xmlfile, self.status, 'status')

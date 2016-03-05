@@ -35,9 +35,9 @@ class Config(object):
             logger.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
         return ret
 
-    def updateFromXml(self, xmlfile, section='config'):
+    def read_xml(self, xmlfile, section='config'):
         """update current configuration file by reading values from a xml file."""
-        xml_conf = xml.readXmlFile(xmlfile)
+        xml_conf = xml.read_file(xmlfile)
         if section not in self.config.sections():
             self.config[section] = {}
             

@@ -15,7 +15,7 @@ def main():
 
     dlmc = dlmclient.Dlmclient(configfile='testfiles/dlmclient.conf')
     dlmc.status.update()
-    dlmc.status.writeXml('real_status.xml')
+    dlmc.status.write_xml('real_status.xml')
     
     return 0
 
@@ -26,4 +26,4 @@ if __name__ == "__main__":
         ret = 1
         import traceback
         traceback.print_exc(5)
-    sys.exit(ret)
+    sys.exit(ret)        
