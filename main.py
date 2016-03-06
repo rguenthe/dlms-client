@@ -1,6 +1,7 @@
 import sys
 import argparse
 import logging
+
 import dlmclient
 
 logger = dlmclient.log.setup_logger('dlmclient', '.dlmclient.log', logging.DEBUG)
@@ -14,6 +15,11 @@ def main():
     config_file = args.config_file
 
     dlmc = dlmclient.Dlmclient(configfile=config_file)
+    dlmc.config.read_xml('testfiles/config.xml')
+    dlmc.webinterface.upload_status('testfiles/statusx.xml')
+    dlmc.webinterface.upload_dataset('testfiles/config.xml')
+    dlmc.webinterface.download_config('testfiles/new_config.xml')
+    print(dlmclient.system.networking.wait_for_ip('wlp3s0', 10))
 
     return 0
 

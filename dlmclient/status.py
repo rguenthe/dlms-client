@@ -19,7 +19,7 @@ class Status(object):
             'uptime':'None',
             'free_disk_space_sdcard':'None',
             'free_disk_space_stick':'None',
-            'gsm_reception':'None',
+            'wwan_reception':'None',
             'log':'None',
         }
 
@@ -53,7 +53,7 @@ class Status(object):
         self.status['uptime'] = system.stats.uptime()
         self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
         self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
-        self.status['gsm_reception'] = self.dlmclient.wwan.signal_strength()
+        self.status['wwan_reception'] = self.dlmclient.wwan.signal_strength()
         print(self.status)
 
     def write_xml(self, xmlfile):

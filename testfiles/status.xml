@@ -5,6 +5,6 @@
 	<uptime>12:23</uptime>
 	<free_disk_space_sdcard>10G</free_disk_space_sdcard>
 	<free_disk_space_stick>12G</free_disk_space_stick>
-	<gsm_reception>-90db</gsm_reception>
+	<wwan_reception>-90db</wwan_reception>
 	<log>message</log>
 </status>
