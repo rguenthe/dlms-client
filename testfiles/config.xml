@@ -6,9 +6,10 @@
     <worker_exec_path>/usr/bin/gps-logger</worker_exec_path>
     <worker_exec_path>-b 12 -v</worker_exec_path>
     <status_upload_interval>2400</status_upload_interval>
-    <status_upload_url>http://urbandata.gnet.haw-hamburg.de/status</status_upload_url>
+    <status_upload_url>http://urbandevelopment.gnet.haw-hamburg.de/status</status_upload_url>
     <data_upload_interval>36000</data_upload_interval>
-    <data_upload_url>http://urbandata.gnet.haw-hamburg.de/data</data_upload_url>
+    <data_upload_url>http://urbandevelopment.gnet.haw-hamburg.de/data</data_upload_url>
+    <config_download_url>http://urbandevelopment.gnet.haw-hamburg.de/config</config_download_url>
     <maintenance_stay_online></maintenance_stay_online>
     <maintenance_wifi>false</maintenance_wifi>
 </config>

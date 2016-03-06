@@ -27,7 +27,7 @@ class Config(object):
             value = self.config.get(section, key)
             logger.info('from section [%s] read "%s"' %(section, key))
         except Exception as err:
-            value = None
+            value = ''
             logger.error('could not read option "%s" from section [%s]: %s' %(key, section, err))
         
         return value
