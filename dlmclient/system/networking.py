@@ -1,8 +1,7 @@
-from __future__ import print_function
-
 import os.path
 import subprocess
 import logging
+import time
 from fileinput import FileInput
 
 logger = logging.getLogger('dlmclient')
@@ -10,19 +9,33 @@ logger = logging.getLogger('dlmclient')
 def get_ip(iface):
     """Return the IP and netmask of the given interface."""
     ip = None
-    netmask = None
     try:
         out = subprocess.check_output('ifconfig %s' %(iface), shell=True).decode('utf-8')
     except subprocess.CalledProcessError as err:
         logger.error('Could not get ip address of interface "%s": %s' %(iface, err))    
-        return (ip, netmask)
+        return ip
     
-    config = out.split()
-    ip = config[config.index('inet')+1]
-    netmask = config[config.index('netmask')+1]
-    logger.info('%s: IP address: %s, netmask: %s' %(iface, ip, netmask))
+    ifconfig = out.split()
+    ip = ifconfig[ifconfig.index('inet')+1]
+    logger.info('%s: IP address: %s, ' %(iface, ip))
 
-    return (ip,netmask)
+    return ip
+
+def wait_for_ip(iface, timeout=10):
+    """Wait for an interface to get a valid IP address with timeout."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        ip = get_ip(iface)
+        if ip is None:
+            time.sleep(1)
+        else:
+            logger.info('%s: IP address: %s' %(iface, ip))
+            return ip
+
+    logger.error('%s: could not get IP address. Reached timeout' %(iface))
+    return None
+    
+
 
 class Interface(object):
     """Network Interface"""
@@ -55,6 +68,8 @@ class Interface(object):
         logger.info('Disabled interface %s' %(self.iface))
 
         return 0
+
+        
 
 class WwanInterface(Interface):
     """WWAN network interface"""
