@@ -119,9 +119,6 @@ class WwanInterface(Interface):
         except subprocess.CalledProcessError as err:
             logger.error('Could not switch to wdm device mode: %s' %(err))
             return 'None'
-        if not os.path.exists(wdm_device):
-            logger.error('Could not switch to wdm device mode. Device %s does not exist' %(self.wdm_device))
-            return 'None'
         
         logger.info('Switched to wdm device mode')
         

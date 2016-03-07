@@ -20,10 +20,10 @@ class CmdThread(threading.Thread):
     def run(self):
         """Start the Thread."""
         logger.info('Starting worker thread with command %s' %(self.cmd))
-        (ret, out) = subprocess.check_output(self.cmd, shell=True)
-        
-        if ret is not 0:
-            logger.error('Error while executing worker thread %s: %s' %(self.cmd, out))
+        try:
+            out = subprocess.check_output(self.cmd, shell=True).decode('utf-8')
+        except subprocess.CalledProcessError as err:
+            logger.error('Error while executing worker thread "%s": %s' %(self.cmd, err))
 
 class FuncThread(threading.Thread):
     """Execute a python function in a separate thread"""
