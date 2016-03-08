@@ -13,10 +13,14 @@ def get_ip(iface):
         out = subprocess.check_output('ifconfig %s' %(iface), shell=True).decode('utf-8')
     except subprocess.CalledProcessError as err:
         logger.error('Could not get ip address of interface "%s": %s' %(iface, err))    
-        return ip
+        return None
     
     ifconfig = out.split()
-    ip = ifconfig[ifconfig.index('inet')+1]
+    try:
+        ip = ifconfig[ifconfig.index('inet')+1]
+    except ValueError as err:
+        return None
+
     logger.info('%s: IP address: %s, ' %(iface, ip))
 
     return ip
@@ -27,6 +31,7 @@ def wait_for_ip(iface, timeout=10):
     while time.time() < deadline:
         ip = get_ip(iface)
         if ip is None:
+            logger.warning('waiting for IP address...')
             time.sleep(1)
         else:
             logger.info('%s: IP address: %s' %(iface, ip))

@@ -16,13 +16,10 @@ def main():
     config_file = args.config_file
 
     dlmc = dlmclient.Dlmclient(configfile=config_file)
+    dlmc.configure()
 
     status_ev,config_ev = dlmc.schedule_tasks()
     print('starting task scheduler')
-    print('status events: \n')
-    print(status_ev)
-    print('config events: \n')
-    print(config_ev)
     sched_thread = dlmc.scheduler.get_run_thread()
     sched_thread.start()
     print('starting worker thread')
