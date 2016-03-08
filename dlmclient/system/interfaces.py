@@ -171,17 +171,14 @@ class WwanInterface(Interface):
 
         return 0
 
-    def signal_strength(self):
+    def signal_strength(iface):
         """Return current signal strength of the wwan device."""
         signalStrength = 'None'
-        if self.wdm_device is None:
-            logger.error('No wdm device present')
-            return 1
-
+        wdm_device = '/dev/cdc-wdm0'
         try:
-            out = subprocess.check_output('/usr/bin/qmicli -d %s --nas-get-signal-strength' %(self.wdm_device), shell=True).decode('utf-8')
+            out = subprocess.check_output('/usr/bin/qmicli -d %s --nas-get-signal-strength' %(wdm_device), shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
-            logger.error('%s: getting signal strength failed: %s' %(self.iface, err))
+            logger.error('%s: getting signal strength failed: %s' %(iface, err))
             return signalStrength
         
         if out is not None:

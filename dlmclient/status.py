@@ -49,13 +49,12 @@ class Status(object):
 
     def collect(self):
         """update status by reading information from the system."""
-        wwan = system.interfaces.WwanInterface(self.config.get('wwan', 'iface'))
         self.status['serial'] = self.config.get('config', 'serial')
         self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
         self.status['uptime'] = system.stats.uptime()
         self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
         self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
-        self.status['wwan_reception'] = wwan.signal_strength()
+        self.status['wwan_reception'] = system.interfaces.WwanInterface.signal_strength('wwan0')
 
     def write_xml(self, xmlfile):
         """export current status to a xml file."""
