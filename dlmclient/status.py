@@ -10,9 +10,9 @@ logger = logging.getLogger('dlmclient')
 class Status(object):
     """DLM client status"""
     
-    def __init__(self, dlmclient):
+    def __init__(self, config):
         """Initialize Status instance with default values."""
-        self.dlmclient = dlmclient
+        self.config = config
         self.status = {
             'serial':'None',
             'timestamp':'None',
@@ -22,6 +22,7 @@ class Status(object):
             'wwan_reception':'None',
             'log':'None',
         }
+        self.collect()
 
     def set(self, key, value):
         """Set a value in the status dictonary."""
@@ -46,15 +47,15 @@ class Status(object):
         
         return ret
 
-    def update(self):
+    def collect(self):
         """update status by reading information from the system."""
-        self.status['serial'] = self.dlmclient.config.get('config', 'serial')
+        wwan = system.interfaces.WwanInterface(self.config.get('wwan', 'iface'))
+        self.status['serial'] = self.config.get('config', 'serial')
         self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
         self.status['uptime'] = system.stats.uptime()
         self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
         self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
-        self.status['wwan_reception'] = self.dlmclient.wwan.signal_strength()
-        print(self.status)
+        self.status['wwan_reception'] = wwan.signal_strength()
 
     def write_xml(self, xmlfile):
         """export current status to a xml file."""
