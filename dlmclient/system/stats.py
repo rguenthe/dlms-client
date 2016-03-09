@@ -24,7 +24,7 @@ def uptime():
 def disk_usage(device):
     """Return disk usage information for the given storrage device."""
     disk_usage = 'None'
-    cmd = 'df | grep -E "%s"' %(device)
+    cmd = 'df -h | grep -E "%s"' %(device)
     try:
         out = subprocess.check_output(cmd, shell=True).decode('utf-8')
     except subprocess.CalledProcessError as err:
