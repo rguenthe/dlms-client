@@ -35,10 +35,10 @@ class Config(object):
             self.dict[section][key] = value
             logger.info('in section [%s] set "%s" to "%s"' %(section, key, value))
         except Exception as err:
-            ret = 1
             logger.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
+            return 1
         
-        return ret
+        return 0
 
     def update_dlmconfig(self, jsonfile, section='dlmconfig'):
         """update current configuration file by reading values from JSON file."""
@@ -50,8 +50,9 @@ class Config(object):
             update_dict = json.load(fp)
             fp.close()
 
+        logger.info('updating values in the configuration')
         for key in update_dict['dlmconfig'].keys():
-            self.dict['dlmconfig'][key] = update_dict['dlmconfig'][key]
+            self.set('dlmconfig', key, update_dict['dlmconfig'][key])
 
         with open(self.configfile, 'w') as fp:
             json.dump(self.dict, fp, sort_keys=True, indent=4)

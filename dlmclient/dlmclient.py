@@ -22,7 +22,7 @@ class Dlmclient(object):
     Argument: configfile -- path to the configuration file
     """
 
-    def __init__(self, configfile='/etc/dlmclient.json'):
+    def __init__(self, configfile):
         """Initialize Dlmclient instance"""
         self.logger = logging.getLogger('dlmclient')
         self.config = Config(configfile)

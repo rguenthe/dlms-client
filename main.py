@@ -1,7 +1,6 @@
 import sys
 import argparse
 import logging
-import time
 
 import dlmclient
 
@@ -16,8 +15,6 @@ def main():
     config_file = args.config_file
 
     dlmc = dlmclient.Dlmclient(configfile=config_file)
-
-    dlmc.download_config()
 
     #status_ev,config_ev = dlmc.schedule_tasks()
     #print('starting task scheduler')
