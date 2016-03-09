@@ -21,10 +21,11 @@ class SystemService(object):
             logger.error('Unknown action %s' %(action))
             return 1
 
-        (ret, out) = subprocess.getstatusoutput('/etc/init.d/%s %s' %(self.service, action))
-        if ret is not 0:
-            logger.error('%s %s failed: %s' %(action, self.service, out))
-        else:
+        try:
+            ret = subprocess.check_call('/etc/init.d/%s %s' %(self.service, action))
             logger.info('%s %s' %(action, self.service))
-        
-        return ret
+        except (subprocess.CalledProcessError, FileNotFoundError) as err:
+            logger.error('%s %s failed: %s' %(action, self.service, err))
+            return 1
+            
+        return 0
