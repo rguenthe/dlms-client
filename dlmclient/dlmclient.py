@@ -22,7 +22,7 @@ class Dlmclient(object):
     Argument: configfile -- path to the configuration file
     """
 
-    def __init__(self, configfile='/etc/dlmclient.conf'):
+    def __init__(self, configfile='/etc/dlmclient.json'):
         """Initialize Dlmclient instance"""
         self.logger = logging.getLogger('dlmclient')
         self.config = Config(configfile)
@@ -50,9 +50,9 @@ class Dlmclient(object):
         url = self.config.get('dlmconfig', 'status_upload_url')
         status_file_dir = self.config.get('dirs', 'status_files')
 
-        status_file = 'status_%s.xml' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+        status_file = 'status_%s.json' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
         status = Status(self.config)
-        status.write_xml(status_file)
+        status.write_json(status_file)
 
         if not self.vpnnetwork.connected:
             ret = self.vpnnetwork.connect()

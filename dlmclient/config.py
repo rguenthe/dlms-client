@@ -1,30 +1,27 @@
-from __future__ import print_function
-
-import os.path
+import os
+import json
 import logging
-import lxml.etree as ET
-import logging
-import configparser
-import dlmclient.system.xml as xml
 
 logger = logging.getLogger('dlmclient')
 
 class Config(object):
-    """DLM client configuration interface."""
+    """DLM client configuration interface (JSON)."""
     
-    def __init__(self, configfile='/etc/dlmclient.conf'):
+    def __init__(self, configfile='/etc/dlmclient.json'):
         """Initialize Config instance using the given configuration file."""
         self.configfile = configfile
-        self.config = configparser.ConfigParser()
-        self.config.read(self.configfile)
+        self.dict = None
+        self.read()
 
-    def update(self):
-        self.config.read(self.configfile)
+    def read(self):
+        with open(self.configfile, 'r') as fp:
+            self.dict = json.load(fp)
+            fp.close()
 
     def get(self, section, key):
         """return value an option in the configuration file."""
         try:
-            value = self.config.get(section, key)
+            value = self.dict[section][key]
             logger.info('from section [%s] read "%s"' %(section, key))
         except Exception as err:
             value = ''
@@ -35,7 +32,7 @@ class Config(object):
     def set(self, section, key, value):
         """set value in the configuration file."""
         try:
-            ret = self.config.set(section, key, value)
+            self.dict[section][key] = value
             logger.info('in section [%s] set "%s" to "%s"' %(section, key, value))
         except Exception as err:
             ret = 1
@@ -43,17 +40,22 @@ class Config(object):
         
         return ret
 
-    def read_xml(self, xmlfile, section='config'):
-        """update current configuration file by reading values from a xml file."""
-        xml_conf = xml.read_file(xmlfile)
-        if section not in self.config.sections():
-            self.config[section] = {}
-            
-        for key in xml_conf.keys():
-            self.set(section, key, str(xml_conf[key]))
+    def update_dlmconfig(self, jsonfile, section='dlmconfig'):
+        """update current configuration file by reading values from JSON file."""
+        if not os.path.exists(jsonfile):
+            logger.error('could not update configuration: File "%s" does not exists' %(jsonfile))
+            return 1
 
-        with open(self.configfile, 'w') as configfile:
-            self.config.write(configfile)
+        with open(jsonfile, 'r') as fp:
+            update_dict = json.load(fp)
+            fp.close()
+
+        for key in update_dict['dlmconfig'].keys():
+            self.dict['dlmconfig'][key] = update_dict['dlmconfig'][key]
+
+        with open(self.configfile, 'w') as fp:
+            json.dump(self.dict, fp, sort_keys=True, indent=4)
+            fp.close()
         
-        logger.info('updated configuration from "%s"' %(xmlfile))
-
+        logger.info('updated configuration from "%s"' %(jsonfile))
+        return 0

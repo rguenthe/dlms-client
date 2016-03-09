@@ -13,7 +13,7 @@ class Network(object):
 
     def __init__(self, config, wwan_inet=False):
         """Initialize a new network instance."""
-        self.config = config.config
+        self.config = config
         self.iface = None
         self.ip = None
         self.connect_timeout = 10
@@ -26,11 +26,11 @@ class Network(object):
     def configure(self, wwan_inet=False):
         """Configure the network using the given config dict."""
         if wwan_inet:
-            self.iface = system.interfaces.WwanInterface(iface=self.config['network']['iface'])
-            self.iface.configure(apn=self.config['network']['wwan_apn'], 
-                                 pin=self.config['network']['wwan_pin'])
+            self.iface = system.interfaces.WwanInterface(iface=self.config.get('network', 'iface'))
+            self.iface.configure(apn=self.config.get('network', 'wwan_apn'), 
+                                 pin=self.config.get('network', 'wwan_pin'))
         else:
-            self.iface = system.interfaces.Interface(iface=self.config['network']['iface'])    
+            self.iface = system.interfaces.Interface(iface=self.config.get('network', 'iface'))    
 
     def connect(self, max_attempts=3):
         """Initiates a connection to the network."""
@@ -89,8 +89,8 @@ class OpenvpnNetwork(Network):
 
     def configure(self, config, wwan_inet=False):
         super().configure(wwan_inet)
-        self.vpnservice = system.service.SystemService(service=self.config['network']['vpn_service'])
-        self.vpn_iface = self.config['network']['vpn_iface']
+        self.vpnservice = system.service.SystemService(service=self.config.get('network', 'vpn_service'))
+        self.vpn_iface = self.config.get('network', 'vpn_iface')
 
     def connect(self):
         """Connect to openvpn network."""
