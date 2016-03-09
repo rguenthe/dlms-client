@@ -12,7 +12,7 @@ class Status(object):
     
     def __init__(self, config):
         """Initialize Status instance with default values."""
-        self.config = config
+        self.config = config.config
         self.status = {
             'serial':'None',
             'timestamp':'None',
@@ -49,12 +49,12 @@ class Status(object):
 
     def collect(self):
         """update status by reading information from the system."""
-        self.status['serial'] = self.config.get('config', 'serial')
+        self.status['serial'] = self.config['dlmconfig']['serial']
         self.status['timestamp'] = time.strftime('%Y/%m/%d %H:%M:%S', time.localtime())
         self.status['uptime'] = system.stats.uptime()
         self.status['free_disk_space_sdcard'] = system.stats.disk_usage('root')
         self.status['free_disk_space_stick'] = system.stats.disk_usage('sda1')
-        self.status['wwan_reception'] = system.interfaces.WwanInterface.signal_strength('wwan0')
+        self.status['wwan_reception'] = system.interfaces.WwanInterface.signal_strength(self.config['network', 'iface'])
 
     def write_xml(self, xmlfile):
         """export current status to a xml file."""

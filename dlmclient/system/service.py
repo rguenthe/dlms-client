@@ -22,7 +22,7 @@ class SystemService(object):
             return 1
 
         try:
-            ret = subprocess.check_call('/etc/init.d/%s %s' %(self.service, action))
+            ret = subprocess.check_call('/etc/init.d/%s %s' %(self.service, action), shell=True)
             logger.info('%s %s' %(action, self.service))
         except (subprocess.CalledProcessError, FileNotFoundError) as err:
             logger.error('%s %s failed: %s' %(action, self.service, err))

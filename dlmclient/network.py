@@ -13,7 +13,7 @@ class Network(object):
 
     def __init__(self, config, wwan_inet=False):
         """Initialize a new network instance."""
-        self.config = config
+        self.config = config.config
         self.iface = None
         self.ip = None
         self.connect_timeout = 10
@@ -28,7 +28,7 @@ class Network(object):
         if wwan_inet:
             self.iface = system.interfaces.WwanInterface(iface=self.config['network']['iface'])
             self.iface.configure(apn=self.config['network']['wwan_apn'], 
-                                 pin=self.config['network']['wwaN_pin'])
+                                 pin=self.config['network']['wwan_pin'])
         else:
             self.iface = system.interfaces.Interface(iface=self.config['network']['iface'])    
 
@@ -95,10 +95,14 @@ class OpenvpnNetwork(Network):
     def connect(self):
         """Connect to openvpn network."""
         ret = super().connect()
-        if ret is not 0
+        if ret is not 0:
             return 1
 
-        self.vpnservice.ctrl('start')
+        ret = self.vpnservice.ctrl('start')
+        if ret is not 0:
+            logger.error('could not start service %s' %(self.vpnservice))
+            return 1
+
         vpn_ip = wait_for_ip(self.vpn_iface, timeout=self.vpn_connect_timeout)
         if vpn_ip is None:
             logger.error('could not connect to vpn service')
