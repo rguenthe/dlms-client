@@ -1,18 +1,18 @@
-import os.path
-import subprocess
 import logging
+import subprocess
 import time
 from fileinput import FileInput
 
 logger = logging.getLogger('dlmclient')
 
+
 def get_ip(iface):
-    """Return the IP and netmask of the given interface."""
+    """Return the IP of the given interface."""
     ip = None
     try:
         out = subprocess.check_output('ifconfig %s' %(iface), shell=True).decode('utf-8')
     except subprocess.CalledProcessError as err:
-        logger.error('Could not get ip address of interface "%s": %s' %(iface, err))    
+        logger.error('Could not get ip address of interface "%s": %s' %(iface, err))
         return None
     
     ifconfig = out.split()
@@ -25,6 +25,7 @@ def get_ip(iface):
     logger.info('%s: IP address: %s, ' %(iface, ip))
 
     return ip
+
 
 def wait_for_ip(iface, timeout=10):
     """Wait for an interface to get a valid IP address with timeout."""
@@ -40,7 +41,6 @@ def wait_for_ip(iface, timeout=10):
 
     logger.error('%s: could not get IP address. Reached timeout' %(iface))
     return None
-    
 
 
 class Interface(object):
@@ -95,26 +95,7 @@ class WwanInterface(Interface):
         super().__init__(iface)
         self.pin = None
         self.apn = None
-        self.wdm_device = self.get_wdm_device()
         self.configured = False
-
-    def up(self):
-        """Enable wwan interface, if it is configured."""
-        if not self.configured:
-            logger.error('Could not enable modem %s, PIN or APN is not configured' %(self.iface))
-            return 1
-        
-        r1 = self.qmi_network_ctrl('start')
-        r2 = super().up()
-
-        return (r1 or r2)
-
-    def down(self):
-        """Disable wwan interface."""
-        r1 = self.qmi_network_ctrl('stop')
-        r2 = super().down()
-        
-        return (r1 or r2)
 
     def configure(self, apn, pin):
         """Configure the interface by setting APN and verifying PIN."""
@@ -127,21 +108,11 @@ class WwanInterface(Interface):
 
         return ret
 
-    def get_wdm_device(self):
-        """Put the device in correct USB mode by ejecting the mass storage device."""
-        wdm_device = '/dev/cdc-wdm%s' %(self.iface.strip('wwan')) 
-        try:
-            subprocess.check_call('eject /dev/sr0', shell=True)
-        except subprocess.CalledProcessError as err:
-            logger.error('Could not switch to wdm device mode: %s' %(err))
-            return 'None'
-        
-        logger.info('Switched to wdm device mode')
-        
-        return wdm_device
-
     def setup_apn(self, apn):
-        """Setup the APN for internet connection by editing the '/etc/network/interfaces' file."""
+        """
+        Setup the APN for internet connection by editing the '/etc/network/interfaces' file.
+        :param apn: the internet APN for the WWAN interface
+        """
         try:
             for line in FileInput('/etc/network/interfaces', inplace=1):
                 if 'wwan_apn' in line:
@@ -156,21 +127,6 @@ class WwanInterface(Interface):
 
         return 0
 
-    def qmi_network_ctrl(self, action):
-        """Execute 'qmi-network' command with 'start' or 'stop' argument."""
-        if action not in ['start', 'stop']:
-            logger.error('Unknown action %s' %(action))
-            return 1
-        try:
-            subprocess.check_call('/usr/bin/qmi-network %s %s' %(self.wdm_device, action), shell=True)
-        except subprocess.CalledProcessError as err:
-            logger.error('%s qmi-network failed: %s' %(action, err))
-            return 1
-        
-        logger.info('%s qmi-network' %(action))
-
-        return 0
-
     def verify_pin(self, pin):
         """Unlock the SIM card using the given PIN."""
         if self.wdm_device is None:
@@ -181,7 +137,7 @@ class WwanInterface(Interface):
         except subprocess.CalledProcessError as err:
             logger.error('%s: pin verification failed: %s' %(self.iface, err))
             return 1
-        
+
         logger.info('%s: pin verification successful' %(self.iface))
         self.pin = pin
 
