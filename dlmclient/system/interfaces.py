@@ -21,6 +21,7 @@ def get_ip(iface):
     except ValueError as err:
         return None
 
+    ip = ip.strip('addr:')
     logger.info('%s: IP address: %s, ' %(iface, ip))
 
     return ip
@@ -49,7 +50,6 @@ class Interface(object):
         """Initialize interface with default values."""
         self.iface = iface
         self.ip = '0.0.0.0'
-        self.netmask = '0.0.0.0'
 
     def up(self):
         """Enable the interface by calling 'ifup'."""
@@ -59,7 +59,7 @@ class Interface(object):
             logger.error('Could not enable interface "%s": %s' %(self.iface, err))
             return 1
         logger.info('Enabled interface %s' %(self.iface))
-        self.ip, self.netmask = get_ip(self.iface)
+        self.ip = get_ip(self.iface)
 
         return 0
 
@@ -74,10 +74,21 @@ class Interface(object):
 
         return 0
 
+    def isUp(self):
+        """Check if the interface is already active by parsing output of 'ifconfig'"""
+        try:
+            subprocess.check_call('ifconfig | grep -E "%s"' %(self.iface), shell=True)
+        except subprocess.CalledProcessError as err:
+            logger.error('interface "%s" is not up: %s' %(self.iface, err))
+            return False
+        
+        logger.info('interface %s is up' %(self.iface))
+
+        return True
         
 
 class WwanInterface(Interface):
-    """WWAN network interface"""
+    """WWAN network interface. Uses libqmi to communicate with the modem"""
 
     def __init__(self, iface):
         """Initialize WwanInterface instance."""
