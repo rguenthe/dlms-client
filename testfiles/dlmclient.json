@@ -26,6 +26,6 @@
         "vpn_iface": "tun0",
         "vpn_service": "openvpn",
         "wwan_apn": "internet.eplus.de",
-        "wwan_pin": "6188"
+        "wwan_pin": "2123"
     }
 }

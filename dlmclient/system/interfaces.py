@@ -3,7 +3,7 @@ import subprocess
 import time
 from fileinput import FileInput
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
 
 
 def get_ip(iface):
@@ -12,7 +12,7 @@ def get_ip(iface):
     try:
         out = subprocess.check_output('ifconfig %s' %(iface), shell=True).decode('utf-8')
     except subprocess.CalledProcessError as err:
-        logger.error('Could not get ip address of interface "%s": %s' %(iface, err))
+        log.error('Could not get ip address of interface "%s": %s' %(iface, err))
         return None
     
     ifconfig = out.split()
@@ -22,7 +22,7 @@ def get_ip(iface):
         return None
 
     ip = ip.strip('addr:')
-    logger.info('%s: IP address: %s, ' %(iface, ip))
+    log.info('%s: IP address: %s, ' %(iface, ip))
 
     return ip
 
@@ -33,13 +33,13 @@ def wait_for_ip(iface, timeout=10):
     while time.time() < deadline:
         ip = get_ip(iface)
         if ip is None:
-            logger.warning('waiting for IP address...')
+            log.warning('waiting for IP address...')
             time.sleep(1)
         else:
-            logger.info('%s: IP address: %s' %(iface, ip))
+            log.info('%s: IP address: %s' %(iface, ip))
             return ip
 
-    logger.error('%s: could not get IP address. Reached timeout' %(iface))
+    log.error('%s: could not get IP address. Reached timeout' %(iface))
     return None
 
 
@@ -56,9 +56,9 @@ class Interface(object):
         try:
             subprocess.check_call('ifup %s' %(self.iface), shell=True)
         except subprocess.CalledProcessError as err:
-            logger.error('Could not enable interface "%s": %s' %(self.iface, err))
+            log.error('Could not enable interface "%s": %s' %(self.iface, err))
             return 1
-        logger.info('Enabled interface %s' %(self.iface))
+        log.info('Enabled interface %s' %(self.iface))
         self.ip = get_ip(self.iface)
 
         return 0
@@ -68,9 +68,9 @@ class Interface(object):
         try:
             subprocess.check_call('ifdown %s' %(self.iface), shell=True)
         except subprocess.CalledProcessError as err:
-            logger.error('Could not disable interface "%s": %s' %(self.iface, err))
+            log.error('Could not disable interface "%s": %s' %(self.iface, err))
             return 1
-        logger.info('Disabled interface %s' %(self.iface))
+        log.info('Disabled interface %s' %(self.iface))
 
         return 0
 
@@ -79,10 +79,10 @@ class Interface(object):
         try:
             subprocess.check_call('ifconfig | grep -E "%s"' %(self.iface), shell=True)
         except subprocess.CalledProcessError as err:
-            logger.error('interface "%s" is not up: %s' %(self.iface, err))
+            log.error('interface "%s" is not up: %s' %(self.iface, err))
             return False
         
-        logger.info('interface %s is up' %(self.iface))
+        log.info('interface %s is up' %(self.iface))
 
         return True
         
@@ -119,26 +119,26 @@ class WwanInterface(Interface):
                     line = '    wwan_apn "%s"\n' %(apn)
                 print(line, end='')
         except FileNotFoundError as err:
-            logger.error('Could not setup APN %s for "%s": %s' %(apn, self.iface, err))
+            log.error('Could not setup APN %s for "%s": %s' %(apn, self.iface, err))
             return 1
         
         self.apn = apn  
-        logger.info('Setup APN %s for "%s"' %(apn, self.iface))
+        log.info('Setup APN %s for "%s"' %(apn, self.iface))
 
         return 0
 
     def verify_pin(self, pin):
         """Unlock the SIM card using the given PIN."""
         if self.wdm_device is None:
-            logger.error('No wdm device present')
+            log.error('No wdm device present')
             return 1
         try:
             subprocess.check_call('/usr/bin/qmicli -d %s --dms-uim-verify-pin="PIN,%s"' %(self.wdm_device, pin), shell=True)
         except subprocess.CalledProcessError as err:
-            logger.error('%s: pin verification failed: %s' %(self.iface, err))
+            log.error('%s: pin verification failed: %s' %(self.iface, err))
             return 1
 
-        logger.info('%s: pin verification successful' %(self.iface))
+        log.info('%s: pin verification successful' %(self.iface))
         self.pin = pin
 
         return 0
@@ -150,7 +150,7 @@ class WwanInterface(Interface):
         try:
             out = subprocess.check_output('/usr/bin/qmicli -d %s --nas-get-signal-strength' %(wdm_device), shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
-            logger.error('%s: getting signal strength failed: %s' %(iface, err))
+            log.error('%s: getting signal strength failed: %s' %(iface, err))
             return signalStrength
         
         if out is not None:

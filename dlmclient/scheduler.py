@@ -1,16 +1,16 @@
-import logging
 import sched
 import time
 import datetime
 import logging
 import threading
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
+
 
 class TaskScheduler(sched.scheduler):
     """Event scheduler that runs in a separate thread."""
 
-    def get_run_thread(self, daemon=False):
+    def get_run_thread(self):
         """Return thread that runs the "run" function of the scheduler"""
         thread = threading.Thread(target=self.run)
         return thread
@@ -26,7 +26,7 @@ class TaskScheduler(sched.scheduler):
             # only schedule future events
             if event_delay > 0:
                 event = self.enter(event_delay, prio, func, argument, kwargs)
-                logger.info('scheduled new event today %s with function %s' %(ev_time, func))
+                log.info('scheduled new event today %s with function %s' %(ev_time, func))
                 events.append(event)
 
         return events

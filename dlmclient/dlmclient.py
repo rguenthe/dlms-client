@@ -10,7 +10,7 @@ from dlmclient.system.threads import CmdThread
 from dlmclient.scheduler import TaskScheduler
 from dlmclient.network import OpenvpnNetwork
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
 
 
 class Dlmclient(object):
@@ -24,7 +24,7 @@ class Dlmclient(object):
 
     def __init__(self, configfile):
         """Initialize Dlmclient instance"""
-        self.logger = logging.getLogger('dlmclient')
+        self.log = logging.getLogger('dlmclient')
         self.config = Config(configfile)
         self.scheduler = TaskScheduler()
         self.vpnnetwork = OpenvpnNetwork(self.config)
@@ -69,7 +69,7 @@ class Dlmclient(object):
         # schedule a network disconnect
         self.scheduler.enter(self.vpnnetwork.max_connection_duration, 5, self.vpnnetwork.disconnect)
 
-        logger.info('status upload successful')
+        log.info('status upload successful')
         return 0
 
     def upload_dataset(self):
@@ -90,7 +90,7 @@ class Dlmclient(object):
         # schedule a network disconnect
         self.scheduler.enter(self.vpnnetwork.max_connection_duration, 5, self.vpnnetwork.disconnect)
 
-        logger.info('data upload successful')
+        log.info('data upload successful')
         return 0
 
     def download_config(self):
@@ -112,7 +112,7 @@ class Dlmclient(object):
 
         ret = self.config.update_dlmconfig(config_file)
         if ret is not 0:
-            logger.error('could not read downloaded config file')
+            log.error('could not read downloaded config file')
             return 1
 
         self.config.read()
@@ -121,5 +121,5 @@ class Dlmclient(object):
         # schedule a network disconnect
         self.scheduler.enter(self.vpnnetwork.max_connection_duration, 5, self.vpnnetwork.disconnect)
 
-        logger.info('config update from server successful')
+        log.info('config update from server successful')
         return 0

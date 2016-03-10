@@ -3,7 +3,8 @@ import logging
 import json
 import dlmclient.system as system
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
+
 
 class Status(object):
     """DLM client status"""
@@ -26,10 +27,10 @@ class Status(object):
         """Set a value in the status dictonary."""
         try:
             self.status[key] = value
-            logger.info('updated %s to %s' %(key, value))
+            log.info('updated %s to %s' %(key, value))
             ret = 0
         except KeyError as err:
-            logger.error('could not update %s to %s: %s' %(key, value, err))
+            log.error('could not update %s to %s: %s' %(key, value, err))
             ret = 1
         
         return ret
@@ -38,9 +39,9 @@ class Status(object):
         """Get a value from the status dictonary."""
         try:
             ret = self.status[key] = value
-            logger.info('read %s' %(key))
+            log.info('read %s' %(key))
         except KeyError as err:
-            logger.error('could not read %s: %s' %(key, err))
+            log.error('could not read %s: %s' %(key, err))
             ret = 1
         
         return ret

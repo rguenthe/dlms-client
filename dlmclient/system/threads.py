@@ -7,7 +7,8 @@ import subprocess
 import threading
 import logging
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
+
 
 class CmdThread(threading.Thread):
     """Execute a command in a separate Thread."""
@@ -19,11 +20,12 @@ class CmdThread(threading.Thread):
 
     def run(self):
         """Start the Thread."""
-        logger.info('Starting worker thread with command %s' %(self.cmd))
+        log.info('Starting worker thread with command %s' %(self.cmd))
         try:
             out = subprocess.check_output(self.cmd, shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
-            logger.error('Error while executing worker thread "%s": %s' %(self.cmd, err))
+            log.error('Error while executing worker thread "%s": %s' %(self.cmd, err))
+
 
 class FuncThread(threading.Thread):
     """Execute a python function in a separate thread"""
@@ -38,7 +40,7 @@ class FuncThread(threading.Thread):
     def run(self):
         """Start the Thread."""
         try:
-            logger.info('Executing function "%s%s" in separate thread ' %(self.func.__name__, self.args))
+            log.info('Executing function "%s%s" in separate thread ' %(self.func.__name__, self.args))
             self.func(*self.args, **self.kwargs)
         except Exception as err:
-            logger.error('Error executing function "%s%s" in thread: %s' %(self.func.__name__, self.args, err))
+            log.error('Error executing function "%s%s" in thread: %s' %(self.func.__name__, self.args, err))

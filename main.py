@@ -4,8 +4,9 @@ import logging
 
 import dlmclient
 
-logger = dlmclient.log.setup_logger('dlmclient', '.dlmclient.log', logging.DEBUG)
-logger = logging.getLogger('dlmclient')
+log = dlmclient.log.setup_logger('dlmclient', '.dlmclient.log', logging.DEBUG)
+log = logging.getLogger('dlmclient')
+
 
 def main():
     parser = argparse.ArgumentParser(description='DLM-Client: Datalogger Management Client. Communicates with the DLM webservice and controls data logging application')

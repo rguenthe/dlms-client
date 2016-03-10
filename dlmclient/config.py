@@ -1,8 +1,9 @@
-import os
 import json
 import logging
+import os
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
+
 
 class Config(object):
     """DLM client configuration interface (JSON)."""
@@ -22,10 +23,10 @@ class Config(object):
         """return value an option in the configuration file."""
         try:
             value = self.dict[section][key]
-            logger.info('from section [%s] read "%s"' %(section, key))
+            log.info('from section [%s] read "%s"' %(section, key))
         except Exception as err:
             value = ''
-            logger.error('could not read option "%s" from section [%s]: %s' %(key, section, err))
+            log.error('could not read option "%s" from section [%s]: %s' %(key, section, err))
         
         return value
 
@@ -33,9 +34,9 @@ class Config(object):
         """set value in the configuration file."""
         try:
             self.dict[section][key] = value
-            logger.info('in section [%s] set "%s" to "%s"' %(section, key, value))
+            log.info('in section [%s] set "%s" to "%s"' %(section, key, value))
         except Exception as err:
-            logger.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
+            log.error('could not set "%s" in section [%s] to "%s": %s' %(key, section, value, err))
             return 1
         
         return 0
@@ -43,20 +44,20 @@ class Config(object):
     def update_dlmconfig(self, jsonfile, section='dlmconfig'):
         """update current configuration file by reading values from JSON file."""
         if not os.path.exists(jsonfile):
-            logger.error('could not update configuration: File "%s" does not exists' %(jsonfile))
+            log.error('could not update configuration: File "%s" does not exists' %(jsonfile))
             return 1
 
         with open(jsonfile, 'r') as fp:
             update_dict = json.load(fp)
             fp.close()
 
-        logger.info('updating values in the configuration')
-        for key in update_dict['dlmconfig'].keys():
-            self.set('dlmconfig', key, update_dict['dlmconfig'][key])
+        log.info('updating values in the configuration')
+        for key in update_dict[section].keys():
+            self.set(section, key, update_dict[section][key])
 
         with open(self.configfile, 'w') as fp:
             json.dump(self.dict, fp, sort_keys=True, indent=4)
             fp.close()
         
-        logger.info('updated configuration from "%s"' %(jsonfile))
+        log.info('updated configuration from "%s"' %(jsonfile))
         return 0

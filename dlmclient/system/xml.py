@@ -1,11 +1,9 @@
-from __future__ import print_function
-
 import os.path
-import logging
 import lxml.etree as ET
 import logging
 
-logger = logging.getLogger('dlmclient')
+log = logging.getLogger('dlmclient')
+
 
 def read_file(filepath):
     """Read the content of an XML file into a dictonary."""
@@ -14,11 +12,12 @@ def read_file(filepath):
         xmltree = ET.parse(filepath)
         for item in xmltree.getroot():
             content_dict[item.tag] = item.text
-        logger.info('Successfully read xml file "%s"' %(filepath))
+        log.info('Successfully read xml file "%s"' %(filepath))
     else:
-        logger.error('Could not open file "%s"' %(filepath))
+        log.error('Could not open file "%s"' %(filepath))
 
     return content_dict
+
 
 def write_file(filepath, content_dict, root):
     """Write an XML file with content from the given dictonary."""
@@ -30,6 +29,6 @@ def write_file(filepath, content_dict, root):
         item.text = content_dict[key]
     try:
         xmltree.write(filepath, xml_declaration=True, encoding='utf-8', pretty_print=True)
-        logger.info('Successfully wrote xml file "%s"' %(filepath))
+        log.info('Successfully wrote xml file "%s"' %(filepath))
     except IOError:
-        logger.error('Could not write file "%s"' %(filepath))
+        log.error('Could not write file "%s"' %(filepath))
