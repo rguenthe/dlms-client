@@ -110,12 +110,12 @@ class Dlmclient(object):
         if ret is not '200':
             return 1
 
-        ret = self.config.read_xml(config_file)
+        ret = self.config.update_dlmconfig(config_file)
         if ret is not 0:
             logger.error('could not read downloaded config file')
             return 1
 
-        self.config.update()
+        self.config.read()
         shutil.copy(config_file, config_file_dir + '/' + config_file)
 
         # schedule a network disconnect
