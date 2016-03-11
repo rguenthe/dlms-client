@@ -12,26 +12,20 @@ class Network(object):
     Simple network connection representation
     """
 
-    def __init__(self, config, wwan_inet=False):
+    def __init__(self, iface, wwan=False, wwan_apn='', wwan_pin=''):
         """Initialize a new network instance."""
-        self.config = config
-        self.iface = None
+        if wwan:
+            self.iface = system.interfaces.WwanInterface(iface)
+            self.iface.configure(apn=wwan_apn, pin=wwan_pin)
+        else:
+            self.iface = system.interfaces.Interface(iface)
         self.ip = None
         self.connect_timeout = 10
         self.connect_retry_interval = 10
         self.connected = False
         self.max_connection_duration = 300
-
-        self.configure(wwan_inet)
-
-    def configure(self, wwan_inet=False):
-        """Configure the network using the given config dict."""
-        if wwan_inet:
-            self.iface = system.interfaces.WwanInterface(iface=self.config.get('network', 'iface'))
-            self.iface.configure(apn=self.config.get('network', 'wwan_apn'), 
-                                 pin=self.config.get('network', 'wwan_pin'))
-        else:
-            self.iface = system.interfaces.Interface(iface=self.config.get('network', 'iface'))    
+        self.wwan_apn = wwan_apn
+        self.wwan_pin = wwan_pin
 
     def connect(self, max_attempts=3):
         """Initiates a connection to the network."""
@@ -67,11 +61,14 @@ class Network(object):
 
     def disconnect(self):
         """Disconnects from the network."""
-        self.iface.down()
-        self.connected = False
-        self.ip = None
+        if self.connected:
+            self.iface.down()
+            self.connected = False
+            self.ip = None
+            log.info('disconnected from network')
+        else:
+            log.info('already disconnected. Doing nothing.')
 
-        log.info('disconnected from network')
         return 0
 
 
@@ -80,13 +77,13 @@ class OpenvpnNetwork(Network):
     Representation of an OpenVpn network.
     """
 
-    def __init__(self, config, wwan_inet=False):
+    def __init__(self, iface, vpn_iface, vpn_service, wwan=False, wwan_apn='', wwan_pin=''):
         """Initialize a openvpn network."""
-        self.vpnservice = None
-        self.vpn_iface = None
+        self.vpnservice = system.service.SystemService(vpn_service)
+        self.vpn_iface = vpn_iface
         self.vpn_connect_timeout = 30
         self.vpn_ip = None
-        super().__init__(config, wwan_inet)
+        super().__init__(iface, wwan, wwan_apn, wwan_pin)
 
     def configure(self, config, wwan_inet=False):
         super().configure(wwan_inet)
@@ -101,7 +98,7 @@ class OpenvpnNetwork(Network):
 
         ret = self.vpnservice.ctrl('start')
         if ret is not 0:
-            log.error('could not start service %s' %(self.vpnservice))
+            log.error('could not start vpn service "%s"' %(self.vpnservice.service))
             return 1
 
         vpn_ip = wait_for_ip(self.vpn_iface, timeout=self.vpn_connect_timeout)
