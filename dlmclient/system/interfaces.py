@@ -1,3 +1,4 @@
+import os.path
 import logging
 import subprocess
 import time
@@ -19,6 +20,7 @@ def get_ip(iface):
     try:
         ip = ifconfig[ifconfig.index('inet')+1]
     except ValueError as err:
+        log.error('Could not get ip address of interface "%s": %s' %(iface, err))
         return None
 
     ip = ip.strip('addr:')
@@ -36,7 +38,6 @@ def wait_for_ip(iface, timeout=10):
             log.warning('waiting for IP address...')
             time.sleep(1)
         else:
-            log.info('%s: IP address: %s' %(iface, ip))
             return ip
 
     log.error('%s: could not get IP address. Reached timeout' %(iface))
@@ -95,6 +96,7 @@ class WwanInterface(Interface):
         super().__init__(iface)
         self.pin = None
         self.apn = None
+        self.wdm_device = '/dev/cdc-wdm%s' % (iface.strip('wwan'))
         self.configured = False
 
     def configure(self, apn, pin):
@@ -129,8 +131,8 @@ class WwanInterface(Interface):
 
     def verify_pin(self, pin):
         """Unlock the SIM card using the given PIN."""
-        if self.wdm_device is None:
-            log.error('No wdm device present')
+        if not os.path.exists(self.wdm_device):
+            log.error('Error verifying WWAN SIM pin. No wdm device present')
             return 1
         try:
             subprocess.check_call('/usr/bin/qmicli -d %s --dms-uim-verify-pin="PIN,%s"' %(self.wdm_device, pin), shell=True)
@@ -145,17 +147,20 @@ class WwanInterface(Interface):
 
     def signal_strength(iface):
         """Return current signal strength of the wwan device."""
-        signalStrength = 'None'
-        wdm_device = '/dev/cdc-wdm0'
+        signal_strength = 'None'
+        wdm_device = '/dev/cdc-wdm%s' % (iface.strip('wwan'))
+        if not os.path.exists(wdm_device):
+            log.error('Error reading WWAN signal strength. No wdm device present')
+            return signal_strength
         try:
             out = subprocess.check_output('/usr/bin/qmicli -d %s --nas-get-signal-strength' %(wdm_device), shell=True).decode('utf-8')
         except subprocess.CalledProcessError as err:
             log.error('%s: getting signal strength failed: %s' %(iface, err))
-            return signalStrength
+            return signal_strength
         
         if out is not None:
             for line in out.split('\n'):
                 if 'Network' in line:
-                    signalStrength = line.strip()
+                    signal_strength = line.strip()
 
-        return signalStrength
+        return signal_strength

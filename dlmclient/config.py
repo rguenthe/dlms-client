@@ -15,9 +15,14 @@ class Config(object):
         self.read()
 
     def read(self):
-        with open(self.configfile, 'r') as fp:
-            self.dict = json.load(fp)
-            fp.close()
+        if os.path.exists(self.configfile):
+            with open(self.configfile, 'r') as fp:
+                self.dict = json.load(fp)
+                fp.close()
+                return 0
+        else:
+            log.error('could not read configuration file: %s' % (self.configfile))
+            return 1
 
     def get(self, section, key):
         """return value an option in the configuration file."""
