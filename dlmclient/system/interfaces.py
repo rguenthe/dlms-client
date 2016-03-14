@@ -148,7 +148,7 @@ class WwanInterface(Interface):
     def signal_strength(iface):
         """Return current signal strength of the wwan device."""
         signal_strength = 'None'
-        wdm_device = '/dev/cdc-wdm%s' % (iface.strip('wwan'))
+        wdm_device = '/dev/cdc-wdm0'
         if not os.path.exists(wdm_device):
             log.error('Error reading WWAN signal strength. No wdm device present')
             return signal_strength

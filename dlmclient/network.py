@@ -71,6 +71,18 @@ class Network(object):
 
         return 0
 
+    def reconnect(self):
+        """Reconnect to the network"""
+        self.disconnect()
+        if self.connect() is 0:
+            log.info('reconnected to the network')
+            ret = 0
+        else:
+            log.error('failed to reconnect to the network')
+            ret = 1
+
+        return ret
+
 
 class OpenvpnNetwork(Network):
     """

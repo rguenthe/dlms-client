@@ -5,27 +5,51 @@ import time
 from pprint import pprint
 
 from dlmclient.dlmclient import Dlmclient
+from dlmclient.status import Status
 from dlmclient import log
 
+
+def print_stats(dlmc):
+    print('\nDLM Client stats:')
+    print('-------------------------------------------------------')
+
+    status = Status(dlmc.config)
+    print('\nStatus:')
+    pprint(status.status)
+
+    print('\nConfiguration:')
+    pprint(dlmc.config.dict)
+    print('\n')
+
+    return 0
 
 def main():
     """
     Datalogger Management Client (DLMC) main executable
     """
 
-    parser = argparse.ArgumentParser(prog='dlmclient', description='DLM Client main executable')
-    parser.add_argument('-c', '--config', default='/etc/dlmconfig.json', help='File containing the configuration for the DLM client')
-    parser.add_argument('-l', '--loglevel', default=30, help='Logging level (default: 30)')
-    parser.add_argument('-f', '--logfile', default='/var/log/dlmclient.log', help='log file location (default: /var/log/dlmclient.log)')
+    # argument parsing
+    parser = argparse.ArgumentParser(prog='dlmclient', description='DLM Client main executable', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-c', metavar='<file>', default='/etc/dlmclient.json', help='configuration file for the DLM client')
+    parser.add_argument('-v', metavar='<level>', choices=[0, 10, 20, 30, 40, 50], default=30, help='Logging level')
+    parser.add_argument('-l', metavar='<file>', default='/var/log/dlmclient.log', help='log file location')
+    parser.add_argument('--stats', action='store_true', default=False, help='print information about the DLM client')
     args = parser.parse_args()
 
     config = args.config
     loglevel = args.loglevel
     logfile = args.logfile
+    stats = args.stats
 
     log.setup_logger('dlmclient', logfile, loglevel)
     dlmc = Dlmclient(configfile=config)
 
+    # print status and config stats
+    if stats is True:
+        print_stats(dlmc)
+        return 0
+
+    # run dlmclient
     dlmc.configure_network()
     print('starting task scheduler')
     dlmc.schedule_events()
