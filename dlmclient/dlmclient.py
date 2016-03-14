@@ -28,11 +28,9 @@ class Dlmclient(object):
         self.scheduler = TaskScheduler()
         self.vpn_network = None
         self.worker = None
-        self.events_status_upload = None
-        self.events_config_download = None
-        self.events_data_upload = None
 
     def configure_network(self):
+        """configure the network connection used to contact the server"""
         iface = self.config.get('network', 'iface')
         wwan_apn = self.config.get('network', 'wwan_apn')
         wwan_pin = self.config.get('network', 'wwan_pin')
@@ -42,11 +40,32 @@ class Dlmclient(object):
         log.info('configuring network')
 
     def schedule_events(self):
+        """Schedule all tasks for the day as specified in the config"""
+
         status_schedule = self.config.get('dlmconfig', 'status_upload_schedule').replace(' ', '').split(',')
+        self.scheduler.enter_schedule(  schedule=status_schedule,
+                                        prio=1,
+                                        func=self.upload_status,
+                                        pre=self.vpn_network.connect,
+                                        post=self.vpn_network.disconnect)
+
         config_schedule = self.config.get('dlmconfig', 'config_download_schedule').replace(' ', '').split(',')
-        self.events_status_upload = self.scheduler.enter_day_multiple(schedule=status_schedule, prio=1, func=self.upload_status)
-        self.events_config_download = self.scheduler.enter_day_multiple(schedule=config_schedule, prio=1, func=self.download_config)
-        log.info('scheduling tasks')
+        self.scheduler.enter_schedule(  schedule=config_schedule,
+                                        prio=1,
+                                        func=self.download_config,
+                                        pre=self.vpn_network.connect,
+                                        post=self.vpn_network.disconnect)
+
+        maintenance_connect_schedule = self.config.get('dlmconfig', 'maintenance_connect_schedule').replace(' ', '').split(',')
+        self.scheduler.enter_schedule(  schedule=maintenance_connect_schedule,
+                                        prio=1,
+                                        func=self.vpn_network.connect)
+        maintenance_disconnect_schedule = self.config.get('dlmconfig', 'maintenance_disconnect_schedule').replace(' ', '').split(',')
+        self.scheduler.enter_schedule(  schedule=maintenance_disconnect_schedule,
+                                        prio=1,
+                                        func=self.vpn_network.disconnect)
+
+        log.info('Task scheduling done')
 
     def start_worker(self):
         """Starts the worker application thread."""
@@ -64,14 +83,6 @@ class Dlmclient(object):
         status = Status(self.config)
         status.write_json(status_file)
 
-        if not self.vpn_network.connected:
-            if self.vpn_network.connect() is 0:
-                # schedule a network disconnect
-                self.scheduler.enter(self.vpn_network.max_connection_duration, 5, self.vpn_network.disconnect)
-            else:
-                log.error('could not connect to the vpn network')
-                return 1
-
         if system.http.post(url=url, file=status_file) is '200':
             shutil.copy(status_file, status_file_dir + '/' + status_file)
             os.remove(status_file)
@@ -87,14 +98,6 @@ class Dlmclient(object):
         url = self.config.get('dlmconfig', 'data_upload_url')
         data_file_dir = self.config.get('dirs', 'data_files')
         output_dir = self.config.get('dlmconfig', 'worker_output_dir')
-
-        if not self.vpn_network.connected:
-            if self.vpn_network.connect() is 0:
-                # schedule a network disconnect
-                self.scheduler.enter(self.vpn_network.max_connection_duration, 5, self.vpn_network.disconnect)
-            else:
-                log.error('could not connect to the vpn network')
-                return 1
 
         for file in system.dir.list_files(output_dir):
             if system.http.post(url=url, file=file) is '200':
@@ -116,16 +119,11 @@ class Dlmclient(object):
 
         config_file = 'server_config_%s.xml' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
 
-        if not self.vpn_network.connected:
-            if self.vpn_network.connect() is 0:
-                # schedule a network disconnect
-                self.scheduler.enter(self.vpn_network.max_connection_duration, 5, self.vpn_network.disconnect)
-            else:
-                log.error('could not connect to the vpn network')
-                return 1
-
         if system.http.get(url=url, dest_file=config_file) is '200':
             ret = self.config.update_dlmconfig(config_file)
+            if ret is not 0:
+                log.error('could not update config from config file %s' %(config_file))
+                return 1
             shutil.copy(config_file, config_file_dir + '/' + config_file)
         else:
             return 1

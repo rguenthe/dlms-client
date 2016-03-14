@@ -15,7 +15,7 @@ class TaskScheduler(sched.scheduler):
         thread = threading.Thread(target=self.run)
         return thread
 
-    def enter_day_multiple(self, schedule, prio, func, argument=(), kwargs={}):
+    def enter_schedule(self, schedule, prio, func, argument=(), kwargs={}, pre=None, post=None):
         """Enter multiple events for the current day with the given schedule"""
         events = []
         today = datetime.date.fromtimestamp(time.time())
@@ -26,7 +26,15 @@ class TaskScheduler(sched.scheduler):
             # only schedule future events
             if event_delay > 0:
                 event = self.enter(event_delay, prio, func, argument, kwargs)
-                log.info('scheduled new event today %s with function %s' %(ev_time, func))
+                log.info('scheduled new event today %s with function %s' %(ev_time, func.__name__))
+
+                if pre is not None:
+                    pre_ev = self.enter(event_delay-5, prio, pre)
+                    log.info('scheduled pre-event function %s' %(pre.__name__))
+                if post is not None:
+                    post_ev = self.enter(event_delay+5, prio, post)
+                    log.info('scheduled post-event function %s' %(post.__name__))
+
                 events.append(event)
 
         return events

@@ -6,13 +6,13 @@
     },
     "dlmconfig": {
         "active": "true",
-        "config_download_schedule": "17:33",
+        "config_download_schedule": "11:47",
         "config_download_url": "http://192.168.2.100/config/by-serial/",
         "data_upload_url": "http://192.168.2.100/data/upload",
-        "maintenance_stay_online": "None",
-        "maintenance_wifi": "false",
+        "maintenance_connect_schedule": "11:30",
+        "maintenance_disconnect_schedule": "12:00",
         "serial": "123456",
-        "status_upload_schedule": "17:32",
+        "status_upload_schedule": "11:47",
         "status_upload_url": "http://192.168.2.100/status/upload",
         "timestamp": "2016/21/11 11:12:13",
         "worker_exec_path": "/bin/sleep 10",
@@ -22,7 +22,7 @@
         "name": "client"
     },
     "network": {
-        "iface": "wwan0",
+        "iface": "wlp3s0",
         "vpn_iface": "tun0",
         "vpn_service": "openvpn",
         "wwan_apn": "internet.eplus.de",

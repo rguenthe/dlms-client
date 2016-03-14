@@ -1,32 +1,45 @@
 import sys
 import argparse
-import logging
+import time
 
-import dlmclient
+from pprint import pprint
 
-log = dlmclient.log.setup_logger('dlmclient', '.dlmclient.log', logging.DEBUG)
-log = logging.getLogger('dlmclient')
+from dlmclient.dlmclient import Dlmclient
+from dlmclient import log
 
 
 def main():
-    parser = argparse.ArgumentParser(description='DLM-Client: Datalogger Management Client. Communicates with the DLM webservice and controls data logging application')
-    parser.add_argument('config_file', help='File containing the configuration for the DLM client')
+    """
+    Datalogger Management Client (DLMC) main executable
+    """
+
+    parser = argparse.ArgumentParser(prog='dlmclient', description='DLM Client main executable')
+    parser.add_argument('-c', '--config', default='/etc/dlmconfig.json', help='File containing the configuration for the DLM client')
+    parser.add_argument('-l', '--loglevel', default=30, help='Logging level (default: 30)')
+    parser.add_argument('-f', '--logfile', default='/var/log/dlmclient.log', help='log file location (default: /var/log/dlmclient.log)')
     args = parser.parse_args()
 
-    config_file = args.config_file
+    config = args.config
+    loglevel = args.loglevel
+    logfile = args.logfile
 
-    dlmc = dlmclient.Dlmclient(configfile=config_file)
+    log.setup_logger('dlmclient', logfile, loglevel)
+    dlmc = Dlmclient(configfile=config)
 
-    #status_ev,config_ev = dlmc.schedule_tasks()
-    #print('starting task scheduler')
-    #sched_thread = dlmc.scheduler.get_run_thread()
-    #sched_thread.start()
-    #print('starting worker thread')
-    #dlmc.start_worker()
+    dlmc.configure_network()
+    print('starting task scheduler')
+    dlmc.schedule_events()
+    sched_thread = dlmc.scheduler.get_run_thread()
+    sched_thread.start()
 
-    #while (dlmc.worker.isAlive() or sched_thread.isAlive()):
-    #    time.sleep(1)
-    #    print(dlmc.scheduler.queue)
+    print('starting worker thread')
+    dlmc.start_worker()
+
+    while dlmc.worker.isAlive() or sched_thread.isAlive():
+        time.sleep(1)
+        pprint(dlmc.scheduler.queue)
+        print('worker is active? :', dlmc.worker.isAlive())
+        print('schedu is active? :', sched_thread.isAlive())
 
     print('Worker exited and all Tasks are done. Exit!')
 
