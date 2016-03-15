@@ -23,49 +23,74 @@ def print_stats(dlmc):
 
     return 0
 
+
 def main():
     """
     Datalogger Management Client (DLMC) main executable
     """
 
     # argument parsing
-    parser = argparse.ArgumentParser(prog='dlmclient', description='DLM Client main executable', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('-c', metavar='<file>', default='/etc/dlmclient.json', help='configuration file for the DLM client')
-    parser.add_argument('-v', metavar='<level>', choices=[0, 10, 20, 30, 40, 50], default=30, help='Logging level')
-    parser.add_argument('-l', metavar='<file>', default='/var/log/dlmclient.log', help='log file location')
+    parser = argparse.ArgumentParser(prog='dlmclient',
+                                     description='DLM Client main executable',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser.add_argument('-c', metavar='<configfile>', default='/etc/dlmclient.json', help='configuration file for the DLM client')
+    parser.add_argument('-v', metavar='<loglevel>', choices=[0, 10, 20, 30, 40, 50], default=30, help='Logging level')
+    parser.add_argument('-l', metavar='<logfile>', default='/var/log/dlmclient.log', help='log file location')
     parser.add_argument('--stats', action='store_true', default=False, help='print information about the DLM client')
     args = parser.parse_args()
 
-    config = args.config
-    loglevel = args.loglevel
-    logfile = args.logfile
+    configfile = args.c
+    loglevel = args.v
+    logfile = args.l
     stats = args.stats
 
     log.setup_logger('dlmclient', logfile, loglevel)
-    dlmc = Dlmclient(configfile=config)
+    dlmc = Dlmclient(configfile=configfile)
 
     # print status and config stats
     if stats is True:
         print_stats(dlmc)
         return 0
 
-    # run dlmclient
+    # -----------------------------------------------------------------------------------------------------------------
+    print('----------------------------------------')
+    print('DLM Client')
+    print('----------------------------------------\n')
+
+    print('Initialize:')
+    print('  configure network access')
     dlmc.configure_network()
-    print('starting task scheduler')
+    dlmc.vpn_network.connect()
+
+    print('  downloading configuration from server')
+    dlmc.download_config()
+
+    print('  uploading status to server')
+    dlmc.upload_status()
+
+    dlmc.vpn_network.connect()
+
+    print('Run:')
+    print('  scheduling tasks')
     dlmc.schedule_events()
-    sched_thread = dlmc.scheduler.get_run_thread()
-    sched_thread.start()
+    st = dlmc.scheduler.get_run_thread()
+    st.start()
 
-    print('starting worker thread')
-    dlmc.start_worker()
+    print('  starting worker thread')
+    dlmc.worker_start()
+    while dlmc.worker.isAlive():
+        time.sleep(5)
 
-    while dlmc.worker.isAlive() or sched_thread.isAlive():
-        time.sleep(1)
-        pprint(dlmc.scheduler.queue)
-        print('worker is active? :', dlmc.worker.isAlive())
-        print('schedu is active? :', sched_thread.isAlive())
+    print('  starting postprocessing thread')
+    dlmc.postprocessor_start()
+    while dlmc.postprocessor.isAlive():
+        time.sleep(5)
 
-    print('Worker exited and all Tasks are done. Exit!')
+    dlmc.upload_dataset()
+
+    print('done')
+
+    # -----------------------------------------------------------------------------------------------------------------
 
     return 0
 
