@@ -28,6 +28,7 @@ class Dlmclient(object):
         self.scheduler = TaskScheduler()
         self.vpn_network = None
         self.worker = None
+        self.postprocessor = None
 
     def configure_network(self):
         """configure the network connection used to contact the server"""
@@ -67,12 +68,34 @@ class Dlmclient(object):
 
         log.info('Task scheduling done')
 
-    def start_worker(self):
+    def worker_start(self):
         """Starts the worker application thread."""
-        worker_cmd = self.config.get('dlmconfig', 'worker_exec_path')
+        worker_cmd = self.config.get('dlmconfig', 'worker_exec')
+        worker_output = self.config.get('dlmconfig', 'worker_output_path')
+
+        if not os.path.exists(worker_output):
+            os.makedirs(worker_output)
+
         self.worker = CmdThread(worker_cmd)
         self.worker.start()
         log.info('started worker')
+
+    def postprocessor_start(self):
+        """Start postprocessing of the generated data"""
+        postproc_exec = self.config.get('dlmconfig', 'postprocessing_exec')
+        worker_output = self.config.get('dlmconfig', 'worker_output_path')
+        postproc_output = self.config.get('dlmconfig', 'postprocessing_output_path')
+
+        if not os.path.exists(postproc_output):
+            os.makedirs(postproc_output)
+
+        # cmd: postproc input output json
+        postprocessor_cmd = '%s %s %s json' %(postproc_exec, worker_output, postproc_output)
+
+        self.postprocessor = CmdThread(postprocessor_cmd)
+        self.postprocessor.start()
+
+        log.info('postprocessing started with command %s' %postprocessor_cmd)
 
     def upload_status(self):
         """upload a status file to the dlm server."""
@@ -97,12 +120,14 @@ class Dlmclient(object):
         """upload a dataset to the dlm server"""
         url = self.config.get('dlmconfig', 'data_upload_url')
         data_file_dir = self.config.get('dirs', 'data_files')
-        output_dir = self.config.get('dlmconfig', 'worker_output_dir')
+        postproc_output = self.config.get('dlmconfig', 'postprocessing_output_path')
+        ret = 1
 
-        for file in system.dir.list_files(output_dir):
+        for file in system.dir.list_files(postproc_output):
             if system.http.post(url=url, file=file) is '200':
                 shutil.copy(file, data_file_dir + '/' + file)
                 os.remove(file)
+                ret = 0
             else:
                 log.error('error while uploading dataset files')
                 break

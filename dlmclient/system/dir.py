@@ -15,5 +15,5 @@ def list_files(dir):
         files.extend(filenames)
         break
 
-    log.error('scanned files in dir "%s"' % (dir))
+    log.info('scanned files in dir "%s"' % (dir))
     return files
