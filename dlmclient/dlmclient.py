@@ -142,7 +142,7 @@ class Dlmclient(object):
         url = url + '/' + self.config.get('dlmconfig', 'serial')
         config_file_dir = self.config.get('dirs', 'config_files')
 
-        config_file = 'server_config_%s.xml' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+        config_file = 'server_config_%s.json' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
 
         if system.http.get(url=url, dest_file=config_file) is '200':
             ret = self.config.update_dlmconfig(config_file)

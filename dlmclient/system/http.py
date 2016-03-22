@@ -16,7 +16,7 @@ def post(url, data={}, file=None, max_attempts=3):
 
     try:
         while attempts < max_attempts:
-            r = requests.post(url, data=data, files=files)
+            r = requests.post(url, data=data, files=files, timeout=30)
             if r.status_code is '200':
                 ret = r.status_code
                 log.info('request to "%s" with data=%s, files=%s successful' %(url, data, files))
@@ -36,7 +36,7 @@ def post(url, data={}, file=None, max_attempts=3):
 def get(url, params={}, dest_file=None):
     """Make a request using HTTP GET."""
     try:
-        r = requests.get(url, params=params)
+        r = requests.get(url, params=params, timeout=30)
     except Exception as err:
         log.error('error while get request to "%s": %s' %(url, err))
         return 1
