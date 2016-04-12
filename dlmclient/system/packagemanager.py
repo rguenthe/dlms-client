@@ -30,21 +30,13 @@ def update():
     return ret
 
 
-def run_maintenance(pkgfile):
+def run_maintenance(upgrade_packages):
     """Do package maintenance by """
-    if not os.path.exists(pkgfile):
-        log.error('could not update configuration: File "%s" does not exists' %(pkgfile))
-        return 1
-
-    with open(pkgfile, 'r') as fp:
-        pkg_maintenance_data = json.load(fp)
-        fp.close()
-
     # update package list
     update()
 
     # install / upgrade packages from the file
-    for package in pkg_maintenance_data['upgrade']:
-        install_or_upgrade(package)
+    for pkg in upgrade_packages:
+        install_or_upgrade(pkg)
 
     return 0

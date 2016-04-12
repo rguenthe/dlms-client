@@ -9,8 +9,8 @@
         "config_download_schedule": "11:47",
         "config_download_url": "http://192.168.2.100/api/config/by-serial/",
         "data_upload_url": "http://192.168.2.100/api/data/upload",
-        "pkg_download_url": "http://192.168.2.100/api/pkg/by-serial/",
-        "pkg_download_schedule": "21:00",
+        "pkg_maintenance" : "gps-calc, gps-logger"
+        "pkg_maintenance_schedule": "21:00",
         "maintenance_connect_schedule": "11:30",
         "maintenance_disconnect_schedule": "12:00",
         "serial": "123456",

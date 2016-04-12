@@ -58,7 +58,7 @@ class Dlmclient(object):
                                         pre=self.vpn_network.connect,
                                         post=self.vpn_network.disconnect)
 
-        config_schedule = self.config.get('dlmconfig', 'pkg_download_schedule').replace(' ', '').split(',')
+        config_schedule = self.config.get('dlmconfig', 'pkg_maintenance_schedule').replace(' ', '').split(',')
         self.scheduler.enter_schedule(  schedule=config_schedule,
                                         prio=1,
                                         func=self.package_maintenance,
@@ -69,6 +69,7 @@ class Dlmclient(object):
         self.scheduler.enter_schedule(  schedule=maintenance_connect_schedule,
                                         prio=1,
                                         func=self.vpn_network.connect)
+
         maintenance_disconnect_schedule = self.config.get('dlmconfig', 'maintenance_disconnect_schedule').replace(' ', '').split(',')
         self.scheduler.enter_schedule(  schedule=maintenance_disconnect_schedule,
                                         prio=1,
@@ -166,17 +167,10 @@ class Dlmclient(object):
         return 0
 
     def package_maintenance(self):
-        """download package maintenance file and install/upgrade packages."""
-        url = self.config.get('dlmconfig', 'pkg_download_url')
-        url = url + '/' + self.config.get('dlmconfig', 'serial')
+        """keep packages up to date that are specified in the config."""
+        packages = self.config.get('pkgmaintenance', 'upgrade').replace(' ', '').split(',')
 
-        pkg_file = 'package_maintenance_%s.json' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
-
-        if system.http.get(url=url, dest_file=pkg_file) is '200':
-            pkg.run_maintenance(pkg_file)
-            os.remove(pkg_file)
-        else:
-            return 1
+        pkg.run_maintenance(packages)
 
         log.info('package maintenance successful')
         return 0
