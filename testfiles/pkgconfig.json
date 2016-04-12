@@ -1,0 +1,6 @@
+{
+  "upgrade": [
+    "gps-calc",
+    "gps-logger"
+  ]
+}

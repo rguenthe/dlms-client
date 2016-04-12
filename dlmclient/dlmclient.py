@@ -4,6 +4,7 @@ import time
 import shutil
 
 import dlmclient.system as system
+import dlmclient.system.packagemanager as pkg
 from dlmclient.status import Status
 from dlmclient.config import Config
 from dlmclient.system.threads import CmdThread
@@ -57,6 +58,13 @@ class Dlmclient(object):
                                         pre=self.vpn_network.connect,
                                         post=self.vpn_network.disconnect)
 
+        config_schedule = self.config.get('dlmconfig', 'pkg_download_schedule').replace(' ', '').split(',')
+        self.scheduler.enter_schedule(  schedule=config_schedule,
+                                        prio=1,
+                                        func=self.package_maintenance,
+                                        pre=self.vpn_network.connect,
+                                        post=self.vpn_network.disconnect)
+
         maintenance_connect_schedule = self.config.get('dlmconfig', 'maintenance_connect_schedule').replace(' ', '').split(',')
         self.scheduler.enter_schedule(  schedule=maintenance_connect_schedule,
                                         prio=1,
@@ -85,12 +93,13 @@ class Dlmclient(object):
         postproc_exec = self.config.get('dlmconfig', 'postprocessing_exec')
         worker_output = self.config.get('dlmconfig', 'worker_output_path')
         postproc_output = self.config.get('dlmconfig', 'postprocessing_output_path')
+        postproc_format = self.config.get('dlmconfig', 'postprocessing_output_format')
 
         if not os.path.exists(postproc_output):
             os.makedirs(postproc_output)
 
         # cmd: postproc input output json
-        postprocessor_cmd = '%s %s %s json' %(postproc_exec, worker_output, postproc_output)
+        postprocessor_cmd = '%s %s %s %s' %(postproc_exec, worker_output, postproc_output, postproc_format)
 
         self.postprocessor = CmdThread(postprocessor_cmd)
         self.postprocessor.start()
@@ -154,4 +163,20 @@ class Dlmclient(object):
             return 1
 
         log.info('config update from server successful')
+        return 0
+
+    def package_maintenance(self):
+        """download package maintenance file and install/upgrade packages."""
+        url = self.config.get('dlmconfig', 'pkg_download_url')
+        url = url + '/' + self.config.get('dlmconfig', 'serial')
+
+        pkg_file = 'package_maintenance_%s.json' % (time.strftime('%Y%m%d_%H%M%S', time.localtime()))
+
+        if system.http.get(url=url, dest_file=pkg_file) is '200':
+            pkg.run_maintenance(pkg_file)
+            os.remove(pkg_file)
+        else:
+            return 1
+
+        log.info('package maintenance successful')
         return 0

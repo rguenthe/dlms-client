@@ -7,21 +7,24 @@
     "dlmconfig": {
         "active": "true",
         "config_download_schedule": "11:47",
-        "config_download_url": "http://192.168.2.100/config/by-serial/",
-        "data_upload_url": "http://192.168.2.100/data/upload",
+        "config_download_url": "http://192.168.2.100/api/config/by-serial/",
+        "data_upload_url": "http://192.168.2.100/api/data/upload",
+        "pkg_download_url": "http://192.168.2.100/api/pkg/by-serial/",
+        "pkg_download_schedule": "21:00",
         "maintenance_connect_schedule": "11:30",
         "maintenance_disconnect_schedule": "12:00",
         "serial": "123456",
         "status_upload_schedule": "11:47",
-        "status_upload_url": "http://192.168.2.100/status/upload",
+        "status_upload_url": "http://192.168.2.100/api/status/upload",
         "timestamp": "2016/21/11 11:12:13",
         "worker_exec": "echo test > /home/root/databuffer/test && /bin/sleep 10",
         "worker_output_path": "/home/root/databuffer",
-        "postprocessing_exec": "/usr/bin/dataset2json",
-        "postprocessing_output_path": "/home/root/datasets/json"
+        "postprocessing_exec": "/usr/bin/dsc",
+        "postprocessing_output_path": "/home/root/datasets/csv",
+        "postprocessing_output_format": "csv"
     },
     "general": {
-        "name": "client"
+        "name": "client-1"
     },
     "network": {
         "iface": "wlp3s0",
