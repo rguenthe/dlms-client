@@ -58,8 +58,8 @@ class Dlmclient(object):
                                         pre=self.vpn_network.connect,
                                         post=self.vpn_network.disconnect)
 
-        config_schedule = self.config.get('dlmconfig', 'pkg_maintenance_schedule').replace(' ', '').split(',')
-        self.scheduler.enter_schedule(  schedule=config_schedule,
+        pkg_schedule = self.config.get('dlmconfig', 'pkg_maintenance_schedule').replace(' ', '').split(',')
+        self.scheduler.enter_schedule(  schedule=pkg_schedule,
                                         prio=1,
                                         func=self.package_maintenance,
                                         pre=self.vpn_network.connect,
@@ -170,7 +170,8 @@ class Dlmclient(object):
         """keep packages up to date that are specified in the config."""
         packages = self.config.get('pkgmaintenance', 'upgrade').replace(' ', '').split(',')
 
-        pkg.run_maintenance(packages)
+        if packages is not 'None':
+            pkg.run_maintenance(packages)
 
         log.info('package maintenance successful')
         return 0
